@@ -1,0 +1,48 @@
+---
+title: maisonmeda.com
+tagline: A live e-commerce platform for a boutique, with Trendyol marketplace sync and iyzico payments.
+summary: maisonmeda.com is a live e-commerce platform Mustafa Erhan Portakal built for a boutique client, covering a customer storefront, an admin panel and the API behind them. It is a Turborepo monorepo holding a Next.js 16 storefront and a NestJS API, with Trendyol marketplace synchronisation and iyzico payments, and has been in production since April 2026.
+role: Freelance Full-Stack Developer
+period: April 2026 – present
+status: Live · real client, in production
+stack:
+  - TypeScript
+  - Turborepo
+  - Next.js 16
+  - NestJS
+  - Prisma
+  - PostgreSQL
+  - iyzico
+  - Trendyol Marketplace API
+  - Zod
+  - Docker Compose
+  - Nginx
+  - Resend
+  - sharp
+---
+
+## What the platform does
+
+maisonmeda.com sells a boutique's products online and keeps that catalogue in step with the same products listed on Trendyol. It is a real commercial system with real customers and real payments, not a demonstration build.
+
+The repository is a Turborepo monorepo with three applications: a Next.js 16 storefront, an admin panel, and a NestJS API serving both. Behind the API sit 13 Prisma models and roughly 58 REST endpoints, with 18 migrations to date.
+
+## How marketplace synchronisation works
+
+A scheduled job runs every 30 minutes, importing and reconciling more than 100 products against Trendyol. Reconciliation is the harder half of that sentence: two systems each believe they own the product catalogue, so the job has to decide what has genuinely changed rather than blindly overwriting one side with the other.
+
+## Why authorisation moved out of Next.js middleware
+
+CVE-2025-29927 made it possible to bypass Next.js middleware, and the platform's authorisation checks were running in exactly that middleware. Because the bypass defeats the middleware layer itself, no amount of additional logic inside that layer would have fixed it — the check had to move somewhere the request could not skip.
+
+I moved authorisation down into NestJS guards at the API layer. Customer sessions and admin sessions now sit behind separate guards, so the storefront and the admin panel do not share an authorisation path. Sessions are JWTs carried in httpOnly cookies, with bcrypt for password hashing and Zod for input validation.
+
+I recorded the change as an Architecture Decision Record, including the alternatives I rejected and why. A decision made under a live CVE is exactly the kind that gets misremembered later as arbitrary, and the client's team needed the reasoning to be legible without me in the room.
+
+## The rest of the infrastructure
+
+Deployment is Docker Compose behind Nginx. Transactional email goes through Resend, and product images are processed with sharp. The order lifecycle runs through iyzico for payment.
+
+## Where it stands
+
+The platform is live at [maisonmeda.com](https://maisonmeda.com) and has been in production since April 2026. Work on it is ongoing.

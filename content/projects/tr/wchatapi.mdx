@@ -1,0 +1,29 @@
+---
+title: wchatapi
+tagline: Oturum izleme paneli olan, kendi barındırılan WhatsApp mesajlaşma API'si.
+summary: wchatapi, Mustafa Erhan Portakal'ın Node.js, Express 5 ve Baileys üzerine kurduğu; oturumları izlemek için Next.js panelle gelen, kendi barındırılan bir WhatsApp mesajlaşma API'sidir. API key doğrulama, HMAC imzalı webhook, rate limiting ve graceful shutdown içerir ve Docker üzerinde çalışır.
+role: Full-Stack Developer
+period: Nisan 2026
+status: Kendi barındırılan
+stack:
+  - Node.js
+  - Express 5
+  - Baileys
+  - Next.js
+  - Docker
+---
+
+## Ne yapıyor
+
+wchatapi, WhatsApp mesajlarını üçüncü parti bir sağlayıcı üzerinden değil, kendi barındırdığınız bir servis üzerinden gönderip alıyor. Yanında oturum durumunu izlemek için bir Next.js panel var.
+
+## Neleri kapsıyor
+
+Bir mesajlaşma API'sinde asıl önemli olan kısımlar sıkıcı olanlar; proje de tam olarak onları kapsıyor:
+
+- Gelen isteklerde **API key doğrulama**.
+- **HMAC imzalı webhook** — alıcı, geri çağrının gerçekten bu servisten geldiğini doğrulayabiliyor.
+- **Rate limiting**, çünkü karşı taraf sınırsız bir gönderim döngüsüne tahammül etmiyor.
+- **Graceful shutdown**, böylece yeniden başlatma devam eden bir oturumu düşürmüyor.
+
+Docker üzerinde çalışıyor.

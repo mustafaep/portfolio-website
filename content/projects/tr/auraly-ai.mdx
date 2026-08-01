@@ -1,0 +1,52 @@
+---
+title: Auraly-AI
+tagline: Ruh haline göre müzik öneren, dört uygulamalı TypeScript monorepo olarak kurulmuş ürün.
+summary: Auraly-AI, Mustafa Erhan Portakal'ın Vimof Studios bünyesinde geliştirdiği, dinleyicinin ruh halini Google Gemini ile yorumlayıp çalınabilir bir Spotify çalma listesine dönüştüren müzik öneri ürünüdür. NestJS API, Next.js web uygulaması, admin panel ve React Native mobil uygulamadan oluşan dört uygulamalı bir TypeScript monorepo olarak çalışır ve auraly-ai.com adresinde yayındadır.
+role: Kurucu Ortak & Full-Stack Developer
+period: Temmuz 2025 – devam ediyor
+status: Yayında · iOS ve Android çıkışı Ağustos 2026 hedefli
+stack:
+  - TypeScript
+  - NestJS 11
+  - Next.js 15
+  - React Native (Expo)
+  - MongoDB
+  - Mongoose 8
+  - Spotify Web API
+  - Google Gemini
+  - Docker Compose
+  - Nginx
+  - GitHub Actions
+  - Cloudflare Access
+---
+
+## Auraly-AI ne yapıyor
+
+Auraly-AI, kullanıcının nasıl hissettiğini anlatan bir metni alıp anında çalabileceği müziğe dönüştürüyor. Google Gemini ruh halini yorumlayıp bir çalma listesi kurgusu üretiyor; Spotify Web API bu kurguyu gerçek parçalara çevirip kullanıcının kendi Spotify oturumunda çalıyor. Temmuz 2025'te kurduğum iki kişilik stüdyo Vimof Studios'un ürünü ve aynı zamanda Bursa Teknik Üniversitesi'ndeki bitirme projem.
+
+## Sistem nasıl kurulu
+
+Ürünün tamamı tek bir TypeScript monorepo içinde yaşıyor; dört uygulama ortak ve tipli bir DTO paketini paylaşıyor. Bu sayede bir API sözleşmesindeki değişiklik, web ve mobil tarafta çalışma anında sürprize dönüşmek yerine derleme hatası olarak karşımıza çıkıyor.
+
+- **API** — NestJS 11; 17 controller üzerinde 102 REST endpoint ve Mongoose 8 ile modellenmiş 27 MongoDB şeması.
+- **Web** — Next.js 15.
+- **Admin panel** — iç kullanıma açık uygulama; Cloudflare Access arkasında, internete kapalı.
+- **Mobil** — Expo üzerinde React Native, Expo Router ile yönlendirme; ses oynatma, push bildirim, deep linking ve i18next + expo-localization ile yerelleştirme.
+
+Ürünün asıl davranışını iki dış servis taşıyor. Spotify kimlik ve oynatma tarafını üstleniyor: OAuth, token yenileme, kütüphane erişimi ve Connect oynatma kontrolü. Gemini yorumlama tarafını: ruh halini okuyup çalma listesi üretmek.
+
+Dağıtım Nginx arkasında Docker Compose ile, CI/CD GitHub Actions üzerinde.
+
+## Öneri hattı neden yeniden yazıldı
+
+Spotify, Recommendations endpoint'ini kullanımdan kaldırdı; yani özelliğin tamamının üzerine kurulduğu tek API çağrısı ortadan kalktı. Öneri, Auraly-AI'ın yan özelliği değil ürünün kendisiydi — dolayısıyla etrafından dolaşılabilecek bir sorun değildi.
+
+Yerine geçecek hazır bir çağrı aramak yerine hattı baştan kurdum. Yeni algoritmayı bilinçli bir tasarım işi olarak ele alıp dokümante ettim, ardından feature flag ve varyant konumlandırmasının arkasına aldım; böylece yeni hat sert bir geçiş yapmadan devreye alınıp karşılaştırılabildi. Tasarımı önce yazıya dökmek burada belirleyici oldu: kısıt kalıcı ve dışarıdan gelen bir kısıttı, dolayısıyla gerekçenin kesinti anının ötesine kalması gerekiyordu.
+
+## Halen açık olan konu
+
+Spotify ile YouTube arasında oynatma senkronizasyonu devam ediyor. Oynatma modelleri ve oturum durumu anlayışları farklı olan iki sağlayıcı arasında tek bir dinleme oturumunu tutarlı tutmak, şu anki problem.
+
+## Bugün nerede
+
+Auraly-AI [auraly-ai.com](https://auraly-ai.com) adresinde yayında; 13 aylık geliştirme sürecinde 241 commit atıldı. iOS ve Android çıkışı Ağustos 2026 hedefli. Geliştirme bende, Vimof Studios'taki ortağımda QA ve test.

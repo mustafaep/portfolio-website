@@ -1,0 +1,46 @@
+---
+title: Post title goes here
+summary: One or two sentences that work on their own. This shows up in the blog index, in search results and in the RSS feed, so write it as a complete statement rather than a teaser.
+date: '2026-08-01'
+tags:
+  - architecture
+draft: true
+---
+
+This file is a skeleton, not a published post. It stays out of the site, the
+sitemap and the RSS feed while `draft: true` is set — remove that line to
+publish it.
+
+## A heading that implies a question
+
+Open each section with the answer. The first sentence should still make sense
+when it is lifted out of the page and quoted on its own, because that is
+usually all a search engine or a language model will take.
+
+Then expand: the context, the constraint, what you tried, what you chose.
+
+## Formatting available
+
+Regular paragraphs, **bold**, `inline code`, and links like
+[maisonmeda.com](https://maisonmeda.com).
+
+- Bulleted lists
+- With an accent rule for each marker
+
+1. Numbered lists
+2. Rendered with a mono marker
+
+```ts
+// Fenced code blocks are styled to match the rest of the site.
+export function example(): string {
+  return 'hello';
+}
+```
+
+> Blockquotes sit against an accent rule.
+
+## Adding a new post
+
+Create `content/blog/en/<slug>.mdx` and `content/blog/tr/<slug>.mdx`, fill in
+the frontmatter above, and drop the `draft` line. The route, sitemap entry,
+RSS item and JSON-LD are generated from the file — nothing else needs editing.

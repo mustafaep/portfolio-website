@@ -1,0 +1,39 @@
+---
+title: Letter to Stars
+tagline: An English diary platform that rewrites your entry at the IELTS level you are aiming for.
+summary: Letter to Stars is an English diary and learning platform built by Mustafa Erhan Portakal, where a user writes a diary entry in English and Gemini rewrites it at a chosen IELTS level from 6 to 9. It also extracts the new vocabulary with Turkish meanings, and marks each day with a star on a visual progress map. It is live at lettertostars.mustafaerhanportakal.com.
+role: Full-Stack Developer
+status: Live
+stack:
+  - React
+  - Vite
+  - Tailwind CSS
+  - NestJS
+  - Prisma
+  - PostgreSQL
+  - FastAPI
+  - Google Gemini
+  - Django
+  - Docker Compose
+---
+
+## What it does
+
+A user writes a diary entry in English, and the platform returns the same entry rewritten at the IELTS level they are aiming for — 6, 7, 8 or 9. Alongside the rewrite it extracts the vocabulary that was new to that entry, with Turkish meanings. Each day of writing earns a star, which builds into a visual progress map over time.
+
+The AI response is structured JSON rather than free text: the rewritten entry, grammar corrections, new words, writing tips, strengths and weaknesses, and overall feedback. Asking for a fixed shape means the interface can render each part in its own place, instead of showing the learner a wall of prose and hoping they find the correction inside it.
+
+## How it is built
+
+The system is split across four services, each in the language that suited it:
+
+- **Frontend** — React with Vite and Tailwind CSS.
+- **Backend** — NestJS with Prisma over PostgreSQL.
+- **AI service** — FastAPI, wrapping Google Gemini.
+- **Admin and analytics** — Django.
+
+Deployment is Docker Compose.
+
+## Where it stands
+
+Letter to Stars is live at [lettertostars.mustafaerhanportakal.com](https://lettertostars.mustafaerhanportakal.com).

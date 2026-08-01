@@ -1,0 +1,47 @@
+---
+title: Yazı başlığı buraya
+summary: Tek başına anlamlı olan bir iki cümle. Bu metin blog listesinde, arama sonuçlarında ve RSS akışında görünüyor; bu yüzden merak uyandıran bir giriş değil, tamamlanmış bir ifade olarak yazılmalı.
+date: '2026-08-01'
+tags:
+  - mimari
+draft: true
+---
+
+Bu dosya yayımlanmış bir yazı değil, iskelet. `draft: true` satırı durduğu
+sürece siteye, site haritasına ve RSS akışına girmiyor — yayımlamak için o
+satırı silmek yeterli.
+
+## Bir soruyu ima eden başlık
+
+Her bölüme cevapla başla. İlk cümle, sayfadan koparılıp tek başına
+alıntılandığında da anlamlı olmalı; çünkü bir arama motorunun ya da dil
+modelinin alacağı şey genellikle sadece o cümle.
+
+Sonra aç: bağlam, kısıt, denediklerin, seçtiğin.
+
+## Kullanılabilir biçimlendirme
+
+Normal paragraflar, **kalın**, `satır içi kod` ve
+[maisonmeda.com](https://maisonmeda.com) gibi bağlantılar.
+
+- Madde işaretli listeler
+- Her işaret için aksan renkli bir çizgi
+
+1. Numaralı listeler
+2. Mono işaretleyiciyle
+
+```ts
+// Kod blokları sitenin geri kalanıyla uyumlu biçimlendiriliyor.
+export function example(): string {
+  return 'merhaba';
+}
+```
+
+> Alıntılar aksan renkli bir çizgiye yaslanıyor.
+
+## Yeni yazı ekleme
+
+`content/blog/en/<slug>.mdx` ve `content/blog/tr/<slug>.mdx` dosyalarını
+oluştur, yukarıdaki frontmatter'ı doldur ve `draft` satırını sil. Rota, site
+haritası kaydı, RSS öğesi ve JSON-LD dosyadan üretiliyor — başka bir yeri
+düzenlemek gerekmiyor.

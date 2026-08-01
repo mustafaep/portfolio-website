@@ -1,0 +1,29 @@
+---
+title: wchatapi
+tagline: A self-hosted WhatsApp messaging API with a session-monitoring panel.
+summary: wchatapi is a self-hosted WhatsApp messaging API built by Mustafa Erhan Portakal on Node.js, Express 5 and Baileys, with a Next.js panel for monitoring sessions. It covers API key validation, HMAC-signed webhooks, rate limiting and graceful shutdown, and runs in Docker.
+role: Full-Stack Developer
+period: April 2026
+status: Self-hosted
+stack:
+  - Node.js
+  - Express 5
+  - Baileys
+  - Next.js
+  - Docker
+---
+
+## What it does
+
+wchatapi sends and receives WhatsApp messages from a service you host yourself, rather than through a third-party provider. A Next.js panel sits alongside it for monitoring session state.
+
+## What it handles
+
+The parts that matter in a messaging API are the boring ones, so those are what the project covers:
+
+- **API key validation** on inbound requests.
+- **HMAC-signed webhooks**, so a receiver can verify a callback genuinely came from this service.
+- **Rate limiting**, because the upstream will not tolerate an unbounded send loop.
+- **Graceful shutdown**, so a restart does not drop an in-flight session.
+
+It runs in Docker.

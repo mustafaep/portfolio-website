@@ -1,0 +1,52 @@
+---
+title: Union Management Platform
+tagline: A 30-module management system for a health workers' union, installed on the client's own infrastructure.
+summary: The Union Management Platform is a management system Mustafa Erhan Portakal built for Demokratik Sağlık-Sen, a health workers' union, covering member records, dues and deduction documents, approval flows, accounting, content and reporting. It comprises 30 backend modules over 40 relational data models, and was packaged with Docker Compose and installed on-premise on the client's own infrastructure.
+role: Freelance Full-Stack Developer
+period: November 2025 – July 2026
+status: Delivered · installed on-premise, no public URL
+stack:
+  - TypeScript
+  - NestJS 11
+  - Prisma 6
+  - PostgreSQL 16
+  - Redis
+  - BullMQ
+  - React 19
+  - Vite 7
+  - Material-UI 7
+  - TanStack Query
+  - Recharts
+  - Puppeteer
+  - AWS SES
+  - Docker Compose
+  - Nginx Proxy Manager
+---
+
+## What the platform does
+
+The Union Management Platform runs the administrative work of a health workers' union: member records, dues and deduction documents, approval processes, accounting, content and reporting. It is the largest system I have built — 30 backend modules over 40 relational data models — and it is the reason the project has no link on this page: it was installed on the client's own infrastructure and is not exposed to the public internet.
+
+## How it is structured
+
+The backend is NestJS 11 with Prisma 6 over PostgreSQL 16. The administrative interface is React 19 on Vite 7, using Material-UI 7 and TanStack Query, with Recharts for the reporting dashboards. The API is documented with Swagger/OpenAPI.
+
+Regional structure is modelled explicitly as a province / district / branch hierarchy, and every record change is written to an audit log. For an organisation whose decisions have to be defensible after the fact, knowing who changed what is part of the product rather than a debugging aid.
+
+## Why work moved onto queues
+
+Notification delivery and PDF generation were moved onto Redis and BullMQ queues. Both are slow and both are bursty — a notification run or a batch of documents affects many members at once — so leaving them in the request path would have meant a request whose duration depended on how many people it touched. Queued, the request returns immediately and the work drains at its own pace.
+
+PDF generation itself runs through Puppeteer, with Excel export alongside it. Notifications go out over three channels: AWS SES, WhatsApp and SMS.
+
+## How permissions work
+
+Role-based access control is dynamic rather than fixed in code: an administrator can create their own roles and assign permissions to them. A union's internal structure is not something an outside developer can enumerate correctly in advance, and it changes without warning — so the system had to let the organisation describe its own hierarchy instead of asking me to hard-code one.
+
+## Deployment and migration
+
+The platform was packaged with Docker Compose and Nginx Proxy Manager and installed on-premise, on infrastructure the client controls. Over the life of the project the schema went through 82 Prisma migrations while the system was in active use, which meant every migration had to be applied against live data rather than a clean database.
+
+## Where it stands
+
+The platform was delivered and is in use. There is no public link — it runs on the client's own infrastructure.

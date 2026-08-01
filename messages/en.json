@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Index",
+    "work": "Work",
+    "about": "About",
+    "writing": "Writing",
+    "contact": "Contact",
+    "menu": "Menu",
+    "close": "Close menu",
+    "skipToContent": "Skip to content"
+  },
+  "controls": {
+    "toggleTheme": "Switch colour theme",
+    "switchToTurkish": "Türkçe",
+    "switchToEnglish": "English",
+    "languageLabel": "Language"
+  },
+  "home": {
+    "heroLead": "Full-stack developer",
+    "intro": "I build and ship production web systems end to end — NestJS APIs, Next.js and React interfaces, PostgreSQL and MongoDB data layers, Docker-based deployment.",
+    "liveWork": "Live work",
+    "liveWorkNote": "Three systems currently running in production.",
+    "selectedWork": "Selected work",
+    "selectedWorkNote": "Case studies on the decisions, not just the stack.",
+    "viewAllWork": "All work",
+    "currently": "Currently",
+    "experienceTitle": "Experience",
+    "viewExperience": "Full experience",
+    "capabilitiesTitle": "What I work with",
+    "contactPrompt": "Open to full-stack roles and freelance work.",
+    "contactCta": "Get in touch"
+  },
+  "work": {
+    "title": "Work",
+    "lead": "Production systems, case studies and side projects — newest and most substantial first.",
+    "featured": "Case studies",
+    "other": "Other projects",
+    "readCase": "Read the case study",
+    "visitLive": "Visit site",
+    "viewSource": "View source",
+    "noLiveLink": "No public link — deployed on-premise",
+    "backToWork": "All work"
+  },
+  "project": {
+    "facts": "Facts",
+    "role": "Role",
+    "period": "Period",
+    "status": "Status",
+    "links": "Links",
+    "techStack": "Tech stack",
+    "live": "Live site",
+    "source": "Source code",
+    "none": "—"
+  },
+  "about": {
+    "title": "About",
+    "atAGlance": "At a glance",
+    "experience": "Experience",
+    "education": "Education",
+    "award": "Award",
+    "certificate": "Certificate",
+    "skills": "Technical skills",
+    "languages": "Languages",
+    "location": "Location",
+    "verify": "Verify certificate",
+    "viewProject": "View project"
+  },
+  "writing": {
+    "title": "Writing",
+    "lead": "Notes on backend architecture, deployment and the decisions behind the systems I build.",
+    "empty": "No posts published yet. The first ones are being written.",
+    "readPost": "Read",
+    "backToWriting": "All writing",
+    "publishedOn": "Published",
+    "tags": "Tags",
+    "rss": "RSS feed"
+  },
+  "contact": {
+    "title": "Contact",
+    "lead": "The fastest way to reach me is email. I read everything and reply within a couple of days.",
+    "email": "Email",
+    "phone": "Phone",
+    "linkedin": "LinkedIn",
+    "github": "GitHub",
+    "location": "Based in",
+    "availability": "Availability",
+    "availabilityBody": "Open to full-stack developer roles and freelance projects. Based in Bursa, open to relocation to İstanbul, İzmir or Ankara, and to remote work."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "This page does not exist, or it moved. The links below cover everything on the site.",
+    "home": "Go to the index"
+  },
+  "footer": {
+    "builtWith": "Built with Next.js and deployed on Netlify.",
+    "sourceNote": "Machine-readable versions of this site:",
+    "rights": "All rights reserved."
+  }
+}

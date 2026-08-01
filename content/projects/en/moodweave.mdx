@@ -1,0 +1,36 @@
+---
+title: MoodWeave
+tagline: A polyglot microservice system built to learn gateway architecture properly.
+summary: MoodWeave is a polyglot microservice system Mustafa Erhan Portakal built to learn gateway architecture, routing traffic through an Nginx reverse proxy to a NestJS API gateway that fronts a Django service and a FastAPI service. The internal services are closed to the internet, and every merge to main deploys to a VPS over SSH through GitHub Actions. The source is on GitHub; it is not currently running live.
+role: Full-Stack Developer
+period: January – March 2026
+status: Not currently live · source on GitHub
+stack:
+  - Nginx
+  - NestJS
+  - Django
+  - FastAPI
+  - React
+  - Vite
+  - Docker
+  - GitHub Actions
+  - Let's Encrypt
+---
+
+## Why it exists
+
+I built MoodWeave to understand gateway architecture by running into its actual problems rather than reading about them. The brief I set myself was to make several services in different languages behave as one system from the outside.
+
+## How requests flow
+
+An Nginx reverse proxy sits at the edge. Behind it, a NestJS API gateway fronts two services: a Django service handling Spotify, and a FastAPI service handling mood analysis. A React client built with Vite sits in front of the gateway.
+
+The internal services are closed to the internet — the gateway is the only way in. Docker healthchecks restart containers automatically when a service stops responding.
+
+## Deployment
+
+Every merge to `main` deploys to a VPS over SSH through GitHub Actions, without touching the server by hand. HTTPS is handled by Let's Encrypt, alongside rate limiting and structured logging.
+
+## Where it stands
+
+MoodWeave has 119 commits and is not currently running live. The source is on [GitHub](https://github.com/MustafaEP/moodweave).

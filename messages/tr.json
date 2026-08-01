@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Başlangıç",
+    "work": "İşler",
+    "about": "Hakkımda",
+    "writing": "Yazılar",
+    "contact": "İletişim",
+    "menu": "Menü",
+    "close": "Menüyü kapat",
+    "skipToContent": "İçeriğe geç"
+  },
+  "controls": {
+    "toggleTheme": "Renk temasını değiştir",
+    "switchToTurkish": "Türkçe",
+    "switchToEnglish": "English",
+    "languageLabel": "Dil"
+  },
+  "home": {
+    "heroLead": "Full-stack developer",
+    "intro": "Üretim ortamına çıkan web sistemlerini uçtan uca geliştiriyorum — NestJS API’leri, Next.js ve React arayüzleri, PostgreSQL ve MongoDB veri katmanları, Docker tabanlı dağıtım.",
+    "liveWork": "Yayındaki işler",
+    "liveWorkNote": "Şu anda üretimde çalışan üç sistem.",
+    "selectedWork": "Seçilmiş işler",
+    "selectedWorkNote": "Sadece kullanılan teknolojiler değil, alınan kararlar üzerine vaka çalışmaları.",
+    "viewAllWork": "Tüm işler",
+    "currently": "Şu anda",
+    "experienceTitle": "Deneyim",
+    "viewExperience": "Deneyimin tamamı",
+    "capabilitiesTitle": "Çalıştığım teknolojiler",
+    "contactPrompt": "Full-stack pozisyonlara ve freelance işlere açığım.",
+    "contactCta": "İletişime geç"
+  },
+  "work": {
+    "title": "İşler",
+    "lead": "Üretimdeki sistemler, vaka çalışmaları ve yan projeler — en yeni ve en kapsamlı olandan başlayarak.",
+    "featured": "Vaka çalışmaları",
+    "other": "Diğer projeler",
+    "readCase": "Vaka çalışmasını oku",
+    "visitLive": "Siteye git",
+    "viewSource": "Kaynak kodu",
+    "noLiveLink": "Genel bağlantı yok — on-premise kuruldu",
+    "backToWork": "Tüm işler"
+  },
+  "project": {
+    "facts": "Künye",
+    "role": "Rol",
+    "period": "Tarih",
+    "status": "Durum",
+    "links": "Bağlantılar",
+    "techStack": "Teknolojiler",
+    "live": "Canlı site",
+    "source": "Kaynak kod",
+    "none": "—"
+  },
+  "about": {
+    "title": "Hakkımda",
+    "atAGlance": "Özet",
+    "experience": "Deneyim",
+    "education": "Eğitim",
+    "award": "Ödül",
+    "certificate": "Sertifika",
+    "skills": "Teknik yetenekler",
+    "languages": "Diller",
+    "location": "Konum",
+    "verify": "Sertifikayı doğrula",
+    "viewProject": "Projeye git"
+  },
+  "writing": {
+    "title": "Yazılar",
+    "lead": "Backend mimarisi, dağıtım ve geliştirdiğim sistemlerin arkasındaki kararlar üzerine notlar.",
+    "empty": "Henüz yayımlanmış yazı yok. İlkleri yazılıyor.",
+    "readPost": "Oku",
+    "backToWriting": "Tüm yazılar",
+    "publishedOn": "Yayımlandı",
+    "tags": "Etiketler",
+    "rss": "RSS akışı"
+  },
+  "contact": {
+    "title": "İletişim",
+    "lead": "Bana ulaşmanın en hızlı yolu e-posta. Gelen her mesajı okuyorum ve birkaç gün içinde yanıtlıyorum.",
+    "email": "E-posta",
+    "phone": "Telefon",
+    "linkedin": "LinkedIn",
+    "github": "GitHub",
+    "location": "Konum",
+    "availability": "Durum",
+    "availabilityBody": "Full-stack developer pozisyonlarına ve freelance projelere açığım. Bursa’da yaşıyorum; İstanbul, İzmir ve Ankara’ya taşınmaya, ayrıca remote çalışmaya açığım."
+  },
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "body": "Bu sayfa mevcut değil ya da adresi değişti. Aşağıdaki bağlantılar sitedeki her şeyi kapsıyor.",
+    "home": "Başlangıca dön"
+  },
+  "footer": {
+    "builtWith": "Next.js ile geliştirildi, Netlify üzerinde yayında.",
+    "sourceNote": "Bu sitenin makine okunabilir sürümleri:",
+    "rights": "Tüm hakları saklıdır."
+  }
+}

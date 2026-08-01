@@ -1,0 +1,48 @@
+---
+title: maisonmeda.com
+tagline: Bir butik için Trendyol senkronizasyonu ve iyzico ödemesi olan, canlı e-ticaret platformu.
+summary: maisonmeda.com, Mustafa Erhan Portakal'ın bir butik müşteri için geliştirdiği; müşteri vitrinini, admin paneli ve ikisinin arkasındaki API'yi kapsayan canlı e-ticaret platformudur. Next.js 16 storefront ve NestJS API barındıran bir Turborepo monorepo olarak kurulu; Trendyol pazaryeri senkronizasyonu ve iyzico ödeme entegrasyonuyla Nisan 2026'dan bu yana üretimde çalışıyor.
+role: Freelance Full-Stack Developer
+period: Nisan 2026 – devam ediyor
+status: Yayında · gerçek müşteri, üretimde
+stack:
+  - TypeScript
+  - Turborepo
+  - Next.js 16
+  - NestJS
+  - Prisma
+  - PostgreSQL
+  - iyzico
+  - Trendyol Marketplace API
+  - Zod
+  - Docker Compose
+  - Nginx
+  - Resend
+  - sharp
+---
+
+## Platform ne yapıyor
+
+maisonmeda.com bir butiğin ürünlerini internetten satıyor ve aynı ürünlerin Trendyol'daki listesiyle katalogu senkron tutuyor. Gerçek müşterileri ve gerçek ödemeleri olan ticari bir sistem; gösterim amaçlı bir kurulum değil.
+
+Depo, üç uygulamalı bir Turborepo monorepo: Next.js 16 storefront, admin panel ve ikisine hizmet veren NestJS API. API'nin arkasında 13 Prisma modeli ve yaklaşık 58 REST endpoint var; bugüne kadar 18 migration uygulandı.
+
+## Pazaryeri senkronizasyonu nasıl çalışıyor
+
+Zamanlanmış bir görev 30 dakikada bir çalışıp 100'den fazla ürünü Trendyol'a karşı içe aktarıyor ve mutabakat yapıyor. Cümlenin zor kısmı mutabakat: iki sistem de ürün katalogunun sahibi olduğunu varsaydığı için görevin, bir tarafı diğerinin üzerine körlemesine yazmak yerine gerçekten neyin değiştiğine karar vermesi gerekiyor.
+
+## Yetkilendirme neden Next.js middleware'inden çıkarıldı
+
+CVE-2025-29927, Next.js middleware'inin atlatılabilmesine yol açıyordu ve platformun yetkilendirme kontrolleri tam olarak o middleware içinde çalışıyordu. Açık, middleware katmanının kendisini devre dışı bıraktığı için o katmana eklenecek hiçbir ek mantık sorunu çözmezdi — kontrolün, isteğin atlayamayacağı bir yere taşınması gerekiyordu.
+
+Yetkilendirmeyi API katmanındaki NestJS guard'larına indirdim. Müşteri oturumları ile admin oturumları artık ayrı guard'ların arkasında; böylece vitrin ile admin paneli aynı yetkilendirme yolunu paylaşmıyor. Oturumlar httpOnly cookie içinde taşınan JWT'ler; parolalar için bcrypt, girdi doğrulama için Zod kullanılıyor.
+
+Değişikliği, reddettiğim alternatifleri ve gerekçelerini de içerecek şekilde bir Mimari Karar Kaydı (ADR) olarak yazdım. Canlı bir CVE altında alınan karar, sonradan tam olarak "keyfi alınmış" diye yanlış hatırlanan karar türüdür; müşterinin ekibinin de gerekçeyi ben odada olmadan okuyabilmesi gerekiyordu.
+
+## Altyapının geri kalanı
+
+Dağıtım, Nginx arkasında Docker Compose ile yapılıyor. İşlemsel e-postalar Resend üzerinden gidiyor, ürün görselleri sharp ile işleniyor. Sipariş yaşam döngüsü ödeme tarafında iyzico'dan geçiyor.
+
+## Bugün nerede
+
+Platform [maisonmeda.com](https://maisonmeda.com) adresinde yayında ve Nisan 2026'dan bu yana üretimde. Geliştirme devam ediyor.

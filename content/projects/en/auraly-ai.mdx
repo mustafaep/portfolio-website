@@ -1,0 +1,52 @@
+---
+title: Auraly-AI
+tagline: A mood-based music recommendation product, built as a four-app TypeScript monorepo.
+summary: Auraly-AI is a mood-based music recommendation product built by Mustafa Erhan Portakal at Vimof Studios, which interprets a listener's mood with Google Gemini and turns it into a playable Spotify playlist. It runs as a TypeScript monorepo of four applications — a NestJS API, a Next.js web app, an admin panel and a React Native mobile app — and is live at auraly-ai.com.
+role: Co-Founder & Full-Stack Developer
+period: July 2025 – present
+status: Live · iOS and Android release targeted for August 2026
+stack:
+  - TypeScript
+  - NestJS 11
+  - Next.js 15
+  - React Native (Expo)
+  - MongoDB
+  - Mongoose 8
+  - Spotify Web API
+  - Google Gemini
+  - Docker Compose
+  - Nginx
+  - GitHub Actions
+  - Cloudflare Access
+---
+
+## What Auraly-AI does
+
+Auraly-AI takes a description of how someone feels and returns music they can play immediately. Google Gemini interprets the mood and generates a playlist concept; the Spotify Web API resolves it into real tracks and plays them on the listener's own Spotify session. It is the product behind Vimof Studios, the two-person studio I co-founded in July 2025, and it was also my graduation project at Bursa Technical University.
+
+## How the system is put together
+
+The whole product lives in one TypeScript monorepo containing four applications that share a single typed DTO package, so a change to an API contract is a compile error in the web app and the mobile app rather than a runtime surprise.
+
+- **API** — NestJS 11, with 102 REST endpoints across 17 controllers and 27 MongoDB schemas modelled in Mongoose 8.
+- **Web** — Next.js 15.
+- **Admin panel** — an internal application, kept off the public internet behind Cloudflare Access.
+- **Mobile** — React Native on Expo, routed with Expo Router, covering audio playback, push notifications, deep linking and localisation through i18next and expo-localization.
+
+Two external services carry the product's core behaviour. Spotify handles identity and playback: OAuth, token refresh, library access and Connect playback control. Gemini handles interpretation: reading a mood and generating a playlist.
+
+Deployment is Docker Compose behind Nginx, with CI/CD on GitHub Actions.
+
+## Why the recommendation pipeline had to be rewritten
+
+Spotify deprecated its Recommendations endpoint, which removed the single API call the entire feature had been built on. Recommendation was not a side feature of Auraly-AI — it was the product — so this was not something that could be patched around.
+
+I rebuilt the pipeline rather than looking for a drop-in replacement. The new algorithm was designed and documented as a deliberate piece of work, then put behind a feature flag with variant positioning so the replacement could be introduced and compared without a hard cutover. Writing the design down first mattered here: the constraint was permanent and external, so the reasoning needed to survive past the moment of the outage.
+
+## What is still open
+
+Playback synchronisation between Spotify and YouTube is in progress. Keeping a single listening session coherent across two providers with different playback models and different notions of session state is the current problem.
+
+## Where it stands
+
+Auraly-AI is live at [auraly-ai.com](https://auraly-ai.com), with 241 commits over 13 months of development. The iOS and Android release is targeted for August 2026. I handle development; my partner at Vimof Studios handles QA and testing.

@@ -1,0 +1,39 @@
+---
+title: Letter to Stars
+tagline: Yazdığınız İngilizce günlüğü, hedeflediğiniz IELTS seviyesinde yeniden yazan platform.
+summary: Letter to Stars, Mustafa Erhan Portakal'ın geliştirdiği; kullanıcının İngilizce günlük yazdığı ve Gemini'nin bu metni seçilen 6-9 arası IELTS seviyesine göre yeniden yazdığı bir İngilizce günlük ve öğrenme platformudur. Ayrıca yeni kelimeleri Türkçe anlamlarıyla çıkarır ve her günü görsel bir ilerleme haritasında bir yıldızla işaretler. lettertostars.mustafaerhanportakal.com adresinde yayındadır.
+role: Full-Stack Developer
+status: Yayında
+stack:
+  - React
+  - Vite
+  - Tailwind CSS
+  - NestJS
+  - Prisma
+  - PostgreSQL
+  - FastAPI
+  - Google Gemini
+  - Django
+  - Docker Compose
+---
+
+## Ne yapıyor
+
+Kullanıcı İngilizce bir günlük yazıyor, platform aynı metni hedeflediği IELTS seviyesinde — 6, 7, 8 veya 9 — yeniden yazılmış hâlde geri veriyor. Yeniden yazımın yanında, o metinde kullanıcı için yeni olan kelimeleri Türkçe anlamlarıyla çıkarıyor. Yazılan her gün bir yıldız kazandırıyor; bu yıldızlar zamanla görsel bir ilerleme haritasına dönüşüyor.
+
+Yapay zekâ yanıtı serbest metin değil, yapılandırılmış JSON: yeniden yazılmış metin, gramer düzeltmeleri, yeni kelimeler, yazım ipuçları, güçlü ve zayıf yönler, genel geri bildirim. Sabit bir biçim istemek, arayüzün her parçayı kendi yerinde gösterebilmesi anlamına geliyor; öğrenciye bir metin yığını verip düzeltmeyi içinde bulmasını ummak yerine.
+
+## Nasıl kurulu
+
+Sistem, her biri kendine uygun dilde yazılmış dört servise bölünmüş durumda:
+
+- **Frontend** — Vite ve Tailwind CSS ile React.
+- **Backend** — PostgreSQL üzerinde Prisma ile NestJS.
+- **Yapay zekâ servisi** — Google Gemini'yi saran FastAPI.
+- **Admin ve analitik** — Django.
+
+Dağıtım Docker Compose ile yapılıyor.
+
+## Bugün nerede
+
+Letter to Stars [lettertostars.mustafaerhanportakal.com](https://lettertostars.mustafaerhanportakal.com) adresinde yayında.

@@ -1,0 +1,36 @@
+---
+title: MoodWeave
+tagline: Gateway mimarisini gerçekten öğrenmek için kurulmuş çok dilli mikroservis sistemi.
+summary: MoodWeave, Mustafa Erhan Portakal'ın gateway mimarisini öğrenmek için kurduğu; trafiği Nginx ters vekilden bir NestJS API gateway'e, oradan da bir Django servisi ile bir FastAPI servisine yönlendiren çok dilli mikroservis sistemidir. İç servisler internete kapalıdır ve main'e yapılan her merge, GitHub Actions üzerinden SSH ile VPS'e deployment tetikler. Kaynak kodu GitHub'da; şu anda canlı değil.
+role: Full-Stack Developer
+period: Ocak – Mart 2026
+status: Şu anda canlı değil · kaynak kodu GitHub'da
+stack:
+  - Nginx
+  - NestJS
+  - Django
+  - FastAPI
+  - React
+  - Vite
+  - Docker
+  - GitHub Actions
+  - Let's Encrypt
+---
+
+## Neden var
+
+MoodWeave'i, gateway mimarisini hakkında okuyarak değil gerçek problemlerine çarparak anlamak için kurdum. Kendime koyduğum hedef, farklı dillerde yazılmış birkaç servisin dışarıdan tek bir sistem gibi davranmasını sağlamaktı.
+
+## İstekler nasıl akıyor
+
+En dışta bir Nginx ters vekil duruyor. Arkasında, bir NestJS API gateway iki servisin önünde: Spotify tarafını yürüten bir Django servisi ve ruh hali analizini yapan bir FastAPI servisi. Gateway'in önünde Vite ile kurulmuş bir React istemcisi var.
+
+İç servisler internete kapalı — içeri giden tek yol gateway. Bir servis yanıt vermeyi bıraktığında Docker healthcheck'leri konteynerleri otomatik olarak yeniden başlatıyor.
+
+## Dağıtım
+
+`main`'e yapılan her merge, GitHub Actions üzerinden SSH ile VPS'e deployment tetikliyor; sunucuya elle dokunmadan. HTTPS Let's Encrypt ile sağlanıyor; yanında rate limiting ve yapılandırılmış loglama var.
+
+## Bugün nerede
+
+MoodWeave 119 commit içeriyor ve şu anda canlı değil. Kaynak kodu [GitHub'da](https://github.com/MustafaEP/moodweave).

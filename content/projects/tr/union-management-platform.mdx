@@ -1,0 +1,52 @@
+---
+title: Union Management Platform
+tagline: Bir sağlık sendikası için 30 modüllü, müşterinin kendi altyapısına kurulan yönetim sistemi.
+summary: Union Management Platform, Mustafa Erhan Portakal'ın Demokratik Sağlık-Sen için geliştirdiği; üye kayıtları, aidat ve kesinti belgeleri, onay süreçleri, muhasebe, içerik ve raporlamayı kapsayan yönetim sistemidir. 40 ilişkisel veri modeli üzerine kurulu 30 backend modülünden oluşur ve Docker Compose ile paketlenip müşterinin kendi altyapısına on-premise kurulmuştur.
+role: Freelance Full-Stack Developer
+period: Kasım 2025 – Temmuz 2026
+status: Teslim edildi · on-premise kurulu, genel adresi yok
+stack:
+  - TypeScript
+  - NestJS 11
+  - Prisma 6
+  - PostgreSQL 16
+  - Redis
+  - BullMQ
+  - React 19
+  - Vite 7
+  - Material-UI 7
+  - TanStack Query
+  - Recharts
+  - Puppeteer
+  - AWS SES
+  - Docker Compose
+  - Nginx Proxy Manager
+---
+
+## Platform ne yapıyor
+
+Union Management Platform, bir sağlık sendikasının idari işleyişini yürütüyor: üye kayıtları, aidat ve kesinti belgeleri, onay süreçleri, muhasebe, içerik ve raporlama. Geliştirdiğim en büyük sistem — 40 ilişkisel veri modeli üzerine kurulu 30 backend modülü — ve bu sayfada bağlantısının olmamasının sebebi de bu: müşterinin kendi altyapısına kuruldu, internete açık değil.
+
+## Nasıl kurgulandı
+
+Backend, PostgreSQL 16 üzerinde Prisma 6 ile NestJS 11. Yönetim arayüzü Vite 7 üzerinde React 19; Material-UI 7 ve TanStack Query kullanıyor, raporlama panolarında Recharts var. API, Swagger/OpenAPI ile dokümante edildi.
+
+Bölgesel yapı il / ilçe / şube hiyerarşisi olarak açıkça modellendi ve her kayıt değişikliği bir audit log'a yazılıyor. Aldığı kararları sonradan savunabilmesi gereken bir kurum için, neyi kimin değiştirdiğini bilmek hata ayıklama kolaylığı değil, ürünün parçası.
+
+## İşler neden kuyruklara taşındı
+
+Bildirim gönderimi ve PDF üretimi Redis ve BullMQ kuyruklarına taşındı. İkisi de yavaş ve ikisi de dalgalı — bir bildirim turu ya da bir belge yığını aynı anda çok sayıda üyeyi etkiliyor — dolayısıyla bunları istek hattında bırakmak, süresi kaç kişiye dokunduğuna bağlı bir istek anlamına gelirdi. Kuyruğa alındığında istek anında dönüyor, iş kendi hızında akıyor.
+
+PDF üretimi Puppeteer üzerinden yürüyor, yanında Excel export var. Bildirimler üç kanaldan gidiyor: AWS SES, WhatsApp ve SMS.
+
+## Yetkilendirme nasıl çalışıyor
+
+Rol tabanlı yetkilendirme koda gömülü değil, dinamik: yönetici kendi rollerini oluşturup bu rollere izin atayabiliyor. Bir sendikanın iç yapısı, dışarıdan bir geliştiricinin önceden doğru şekilde sayabileceği bir şey değil ve haber vermeden değişiyor — bu yüzden sistemin, benden sabit bir hiyerarşi yazmamı istemek yerine kurumun kendi hiyerarşisini tanımlamasına izin vermesi gerekiyordu.
+
+## Dağıtım ve migration
+
+Platform, Docker Compose ve Nginx Proxy Manager ile paketlenip müşterinin kontrolündeki altyapıya on-premise kuruldu. Proje boyunca şema, sistem aktif kullanımdayken 82 Prisma migration'ından geçti; yani her migration temiz bir veritabanına değil, canlı veriye uygulanmak zorundaydı.
+
+## Bugün nerede
+
+Platform teslim edildi ve kullanımda. Genel bir bağlantısı yok — müşterinin kendi altyapısında çalışıyor.

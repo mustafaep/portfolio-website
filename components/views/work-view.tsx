@@ -34,7 +34,6 @@ export function WorkView({ locale }: { locale: Locale }) {
 
       <Shell>
         <Row label={t.work.featured} as="section">
-          <h2 className="sr-only">{t.work.featured}</h2>
           <ol className="flex flex-col">
             {featured.map((project, index) => (
               <li key={project.slug} className="border-b border-line last:border-b-0">
@@ -78,7 +77,6 @@ export function WorkView({ locale }: { locale: Locale }) {
         </Row>
 
         <Row label={t.work.other} as="section">
-          <h2 className="sr-only">{t.work.other}</h2>
           <ul className="grid gap-px border border-line bg-line sm:grid-cols-2">
             {others.map((project) => (
               <li key={project.slug} className="flex flex-col gap-3 bg-bg p-6">

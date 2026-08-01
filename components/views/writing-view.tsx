@@ -36,7 +36,6 @@ export function WritingView({ locale }: { locale: Locale }) {
 
       <Shell>
         <Row label={t.writing.title} as="section">
-          <h2 className="sr-only">{t.writing.title}</h2>
           {posts.length === 0 ? (
             <p className="max-w-[48ch] text-muted">{t.writing.empty}</p>
           ) : (

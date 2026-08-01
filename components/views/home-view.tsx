@@ -28,14 +28,24 @@ export function HomeView({ locale }: { locale: Locale }) {
     <>
       <JsonLd data={homeGraph(locale)} />
 
-      {/* Hero: one sentence about the work, then straight to the evidence. */}
+      {/*
+        Hero: one sentence about the work, then straight to the evidence.
+
+        The section reserves its height. A display face this large re-wraps to a
+        different number of lines when the webfont replaces the metric-adjusted
+        fallback, and everything below the hero — the whole page — moved with it.
+        Reserving the space means the headline can re-wrap inside a box that does
+        not change size, so nothing downstream shifts. Widths are in em rather
+        than ch for the same reason: ch is the width of the font's "0" glyph and
+        so is family-dependent, while em only tracks font-size.
+      */}
       <Shell>
-        <section className="pt-16 pb-14 md:pt-28 md:pb-20">
+        <section className="flex min-h-[40rem] flex-col pt-16 pb-14 md:min-h-[46rem] md:pt-28 md:pb-20">
           <p className="eyebrow">
             {t.home.heroLead} · {person.location[locale]}
           </p>
-          <h1 className="mt-6 max-w-[16ch] text-hero">{headline[locale]}</h1>
-          <p className="mt-8 max-w-[52ch] text-lead text-muted">{tagline[locale]}</p>
+          <h1 className="mt-6 max-w-[7.5em] text-hero">{headline[locale]}</h1>
+          <p className="mt-8 max-w-[34em] text-lead text-muted">{tagline[locale]}</p>
         </section>
       </Shell>
 
@@ -65,7 +75,6 @@ export function HomeView({ locale }: { locale: Locale }) {
         {/* Case studies. */}
         <Row label={t.home.selectedWork} as="section">
           <div className="flex flex-wrap items-baseline justify-between gap-4">
-            <h2 className="sr-only">{t.home.selectedWork}</h2>
             <p className="max-w-[46ch] text-sm text-muted">{t.home.selectedWorkNote}</p>
             <Link
               href={localePath(locale, 'projects')}
@@ -112,7 +121,6 @@ export function HomeView({ locale }: { locale: Locale }) {
 
         {/* Experience, compressed. The full detail lives on /about. */}
         <Row label={t.home.experienceTitle} as="section">
-          <h2 className="sr-only">{t.home.experienceTitle}</h2>
           <ul className="flex flex-col">
             {experience.map((job) => (
               <li
@@ -149,7 +157,6 @@ export function HomeView({ locale }: { locale: Locale }) {
 
         {/* Capabilities as plain grouped lists. No levels, no bars, no scores. */}
         <Row label={t.home.capabilitiesTitle} as="section">
-          <h2 className="sr-only">{t.home.capabilitiesTitle}</h2>
           <dl className="grid gap-x-10 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
             {skills.map((group) => (
               <div key={group.key}>

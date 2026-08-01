@@ -32,7 +32,6 @@ export function AboutView({ locale }: { locale: Locale }) {
           This is the block a generative engine is most likely to quote.
         */}
         <Row label={t.about.atAGlance} as="section">
-          <h2 className="sr-only">{t.about.atAGlance}</h2>
           <p className="max-w-[62ch] text-lead">{atAGlance[locale]}</p>
           <dl className="mt-8 grid max-w-2xl gap-x-10 gap-y-4 sm:grid-cols-2">
             <div>
@@ -51,7 +50,6 @@ export function AboutView({ locale }: { locale: Locale }) {
         </Row>
 
         <Row label={t.about.experience} as="section">
-          <h2 className="sr-only">{t.about.experience}</h2>
           <div className="flex flex-col gap-12">
             {experience.map((job) => (
               <article key={`${job.company}-${job.startISO}`}>
@@ -90,7 +88,6 @@ export function AboutView({ locale }: { locale: Locale }) {
         </Row>
 
         <Row label={t.about.education} as="section">
-          <h2 className="sr-only">{t.about.education}</h2>
           <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
             <h3 className="font-display text-h3">{education.degree[locale]}</h3>
             <p className="font-mono text-xs text-muted">
@@ -106,7 +103,6 @@ export function AboutView({ locale }: { locale: Locale }) {
         </Row>
 
         <Row label={t.about.award} as="section">
-          <h2 className="sr-only">{t.about.award}</h2>
           <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
             <h3 className="font-display text-h3">
               {locale === 'tr' ? award.nameTr : award.name}
@@ -121,7 +117,6 @@ export function AboutView({ locale }: { locale: Locale }) {
         </Row>
 
         <Row label={t.about.certificate} as="section">
-          <h2 className="sr-only">{t.about.certificate}</h2>
           <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
             <h3 className="font-display text-h3">{certificate.name}</h3>
             <p className="font-mono text-xs text-muted">
@@ -138,7 +133,6 @@ export function AboutView({ locale }: { locale: Locale }) {
         </Row>
 
         <Row label={t.about.skills} as="section">
-          <h2 className="sr-only">{t.about.skills}</h2>
           <dl className="grid gap-x-10 gap-y-7 sm:grid-cols-2">
             {skills.map((group) => (
               <div key={group.key}>

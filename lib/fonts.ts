@@ -6,8 +6,14 @@ import { Instrument_Serif, Inter, JetBrains_Mono } from 'next/font/google';
  * on the critical path.
  */
 
+/**
+ * latin-ext is required, not optional: ı, ş and ğ live outside the `latin`
+ * subset, so without it the Turkish pages render those three letters in a
+ * substituted font and the headline comes out visibly mixed. The browser only
+ * fetches the latin-ext file when a page actually uses those characters.
+ */
 export const instrumentSerif = Instrument_Serif({
-  subsets: ['latin'],
+  subsets: ['latin', 'latin-ext'],
   weight: '400',
   style: ['normal', 'italic'],
   variable: '--font-instrument-serif',
@@ -21,7 +27,7 @@ export const inter = Inter({
 });
 
 export const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
+  subsets: ['latin', 'latin-ext'],
   weight: ['400', '500'],
   variable: '--font-jetbrains-mono',
   display: 'swap',

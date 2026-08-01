@@ -29,11 +29,20 @@ export function Row({
   className?: string;
   as?: 'div' | 'section' | 'article' | 'li';
 }) {
+  // In a section the label is the section's heading, so it is marked up as one.
+  // Rendering it as a plain div and hiding a duplicate <h2> nearby is what broke
+  // heading order: the h3s inside followed an h1 with no h2 between them.
+  const Label = Tag === 'section' ? 'h2' : 'div';
+
   return (
     <Tag
       className={`grid gap-x-10 gap-y-4 border-t border-line py-10 md:grid-cols-[minmax(0,9rem)_1fr] md:py-14 ${className}`}
     >
-      {label ? <div className="eyebrow pt-1.5">{label}</div> : <div aria-hidden="true" />}
+      {label ? (
+        <Label className="eyebrow pt-1.5">{label}</Label>
+      ) : (
+        <div aria-hidden="true" />
+      )}
       <div className="min-w-0">{children}</div>
     </Tag>
   );

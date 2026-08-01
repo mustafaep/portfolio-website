@@ -44,7 +44,6 @@ export function ContactView({ locale }: { locale: Locale }) {
 
       <Shell>
         <Row label={t.contact.title} as="section">
-          <h2 className="sr-only">{t.contact.title}</h2>
           <dl className="grid gap-px border border-line bg-line sm:grid-cols-2">
             {channels.map((channel) => (
               <div key={channel.label} className="bg-bg px-5 py-4">
@@ -66,7 +65,6 @@ export function ContactView({ locale }: { locale: Locale }) {
         </Row>
 
         <Row label={t.contact.availability} as="section">
-          <h2 className="sr-only">{t.contact.availability}</h2>
           <p className="max-w-[58ch] text-lead">{t.contact.availabilityBody}</p>
         </Row>
       </Shell>

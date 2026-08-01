@@ -97,7 +97,7 @@ export function WorkView({ locale }: { locale: Locale }) {
                     href={localePath(locale, `projects/${project.slug}`)}
                     className="link-rule text-accent-ink"
                   >
-                    {t.writing.readPost} →
+                    {t.work.readMore} →
                   </Link>
                   {project.live ? (
                     <OutLink href={project.live}>{t.work.visitLive}</OutLink>

@@ -7,9 +7,13 @@ const __dirname = dirname(__filename);
 
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
-export default [
+const config = [
   {
-    ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts'],
+    // `.next` is matched at any depth: sibling git worktrees under .claude
+    // carry their own build output, which is generated code, not source.
+    ignores: ['**/.next/**', '**/node_modules/**', '.claude/**', 'next-env.d.ts'],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
 ];
+
+export default config;

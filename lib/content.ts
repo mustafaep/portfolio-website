@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
 
-import { projects as projectRegistry, type Locale } from './site';
+import { CONTENT_UPDATED, projects as projectRegistry, type Locale } from './site';
 
 const CONTENT_DIR = path.join(process.cwd(), 'content');
 
@@ -91,7 +91,6 @@ export function getProject(slug: string, locale: Locale): ProjectDoc | null {
   const raw = fs.readFileSync(file, 'utf8');
   const { data, content } = matter(raw);
   const label = `content/projects/${locale}/${slug}.mdx`;
-  const stat = fs.statSync(file);
 
   return {
     slug,
@@ -108,7 +107,7 @@ export function getProject(slug: string, locale: Locale): ProjectDoc | null {
     github: registry.github,
     featured: registry.featured,
     rank: registry.rank,
-    updated: stat.mtime.toISOString(),
+    updated: CONTENT_UPDATED,
   };
 }
 

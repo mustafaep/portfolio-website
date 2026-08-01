@@ -44,6 +44,11 @@ export function buildMetadata({
         tr: absoluteUrl('tr', path),
         'x-default': absoluteUrl('en', path),
       },
+      types: {
+        'application/rss+xml': [
+          { url: `${SITE_URL}/rss.xml`, title: `${person.name} — Writing` },
+        ],
+      },
     },
     openGraph: {
       type,

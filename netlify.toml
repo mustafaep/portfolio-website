@@ -7,3 +7,12 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# The CV download was removed. The PDF was linked from the old hero and may be
+# indexed or bookmarked, so it redirects to the page that now carries the same
+# information rather than returning 404.
+[[redirects]]
+  from = "/Mustafa-Erhan-Portakal-CV.pdf"
+  to = "/about"
+  status = 301
+  force = true

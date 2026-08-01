@@ -12,6 +12,14 @@
 
 export const SITE_URL = 'https://mustafaerhanportakal.com';
 
+/**
+ * Date the site copy was last revised. Used for sitemap `lastModified` and
+ * schema `dateModified`. Kept as an explicit constant rather than read from
+ * file mtimes, which on a CI checkout are the clone time and would make every
+ * deploy claim the whole site changed. Bump it when content changes.
+ */
+export const CONTENT_UPDATED = '2026-08-01';
+
 export const LOCALES = ['en', 'tr'] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = 'en';

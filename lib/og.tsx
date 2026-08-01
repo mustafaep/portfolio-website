@@ -11,11 +11,11 @@ const fontDir = path.join(process.cwd(), 'assets', 'fonts');
 const serif = fs.readFileSync(path.join(fontDir, 'InstrumentSerif-Regular.ttf'));
 const mono = fs.readFileSync(path.join(fontDir, 'JetBrainsMono-Regular.ttf'));
 
-/** Light paper palette, matching the site's light theme. */
-const ink = '#131110';
-const muted = '#6b625b';
-const paper = '#fbfaf8';
-const accent = '#c2410c';
+/** Light theme values, kept in sync with :root in app/globals.css. */
+const ink = '#1a1a2e';
+const muted = '#6b6b80';
+const paper = '#f5f3f0';
+const accent = '#0d9f5f';
 
 /**
  * Shared Open Graph card. Uses the same serif and mono the site uses, so a

@@ -3,20 +3,29 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
-   Palette — one warm neutral family + a single accent.
-   The accent is a burnt orange: "portakal" is Turkish for orange.
-   `--c-accent` is for graphic use; `--c-accent-ink` is the AA-contrast text
-   variant. Never use `--c-accent` for body-sized text.
+   Palette — carried over from the previous site, converted to OKLCH.
+
+   Backgrounds, text and the green accent are the original values:
+     dark  #0a0a0f / #f0eeeb   light #f5f3f0 / #1a1a2e
+     accent #6cf5a5 (dark)     #0d9f5f (light)
+
+   Two deliberate changes. The second accent (#5be0f7 cyan) and --accent-glow
+   are gone: the palette is one neutral family plus a single accent, and a glow
+   was on the list of effects to drop. And `--c-accent-ink` — the text variant —
+   is darker than the source green in light mode, because #0d9f5f on #f5f3f0 is
+   only 3.09:1 and fails WCAG AA for body text. `--c-accent` keeps the exact
+   original green for graphic use: rules, markers, bullets. Never set body-sized
+   text in `--c-accent`.
    --------------------------------------------------------------------------- */
 :root {
-  --c-bg: oklch(0.992 0.004 85);
-  --c-surface: oklch(0.972 0.006 85);
-  --c-ink: oklch(0.19 0.012 75);
-  --c-muted: oklch(0.475 0.012 75);
-  --c-line: oklch(0.895 0.007 80);
-  --c-accent: oklch(0.62 0.18 45);
-  --c-accent-ink: oklch(0.5 0.16 42);
-  --c-selection: oklch(0.62 0.18 45 / 0.22);
+  --c-bg: oklch(0.965 0.005 78.3);
+  --c-surface: oklch(0.929 0.007 80.7);
+  --c-ink: oklch(0.228 0.038 282.9);
+  --c-muted: oklch(0.535 0.033 285.2);
+  --c-line: oklch(0.907 0.004 91.4);
+  --c-accent: oklch(0.619 0.147 156.1);
+  --c-accent-ink: oklch(0.5 0.14 156);
+  --c-selection: oklch(0.619 0.147 156.1 / 0.22);
 
   --step-hero: clamp(3rem, 8.5vw, 7rem);
   --step-h2: clamp(2rem, 4.2vw, 3.25rem);
@@ -29,14 +38,14 @@
 }
 
 .dark {
-  --c-bg: oklch(0.158 0.008 75);
-  --c-surface: oklch(0.202 0.009 75);
-  --c-ink: oklch(0.945 0.006 85);
-  --c-muted: oklch(0.695 0.011 82);
-  --c-line: oklch(0.305 0.011 75);
-  --c-accent: oklch(0.755 0.152 58);
-  --c-accent-ink: oklch(0.805 0.13 62);
-  --c-selection: oklch(0.755 0.152 58 / 0.26);
+  --c-bg: oklch(0.147 0.011 285);
+  --c-surface: oklch(0.186 0.016 284.7);
+  --c-ink: oklch(0.95 0.005 78.3);
+  --c-muted: oklch(0.639 0.024 285.7);
+  --c-line: oklch(0.215 0.008 285.7);
+  --c-accent: oklch(0.874 0.165 155.1);
+  --c-accent-ink: oklch(0.874 0.165 155.1);
+  --c-selection: oklch(0.874 0.165 155.1 / 0.26);
 }
 
 @theme inline {

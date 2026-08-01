@@ -1,6 +1,6 @@
 {
-  "name": "Mustafa Erhan Portakal - Portfolio",
-  "short_name": "MEP Portfolio",
+  "name": "Mustafa Erhan Portakal — Full-Stack Developer",
+  "short_name": "M. E. Portakal",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -15,10 +15,10 @@
       "purpose": "any"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#f5f3f0",
+  "background_color": "#f5f3f0",
   "display": "standalone",
-  "description": "Mustafa Erhan Portakal — Backend-Focused Software Developer. NestJS, FastAPI, Django, TypeScript, Python. Three personal projects in production on a self-managed VPS, with LLM integration via Gemini.",
+  "description": "Full-stack developer who ships production systems end to end — NestJS APIs, Next.js and React interfaces, PostgreSQL and MongoDB data layers, Docker-based deployment.",
   "start_url": "/",
   "scope": "/"
 }

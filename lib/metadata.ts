@@ -1,6 +1,17 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 
 import { SITE_URL, absoluteUrl, person, tagline, type Locale } from './site';
+
+/**
+ * Browser chrome follows the theme. Values are the light and dark background
+ * colours from app/globals.css.
+ */
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f5f3f0' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0f' },
+  ],
+};
 
 export const TITLE_TEMPLATE = `%s — ${person.name}`;
 

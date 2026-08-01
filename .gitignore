@@ -1,7 +1,10 @@
 node_modules
-dist
-build
-.env
 .next/
 out/
+build
+dist
+.env
+.env*.local
 .claude/
+*.tsbuildinfo
+.DS_Store

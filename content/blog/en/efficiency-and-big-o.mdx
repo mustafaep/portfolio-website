@@ -1,0 +1,307 @@
+---
+title: Efficiency and Big-O
+summary: 'How to predict what an algorithm will cost before running it: counting loops, finding the dominant term, and the seven efficiency classes.'
+date: '2026-08-26'
+series: Data Structures
+tags:
+  - algorithms
+  - big-o
+  - data structures
+---
+
+This post is a **study file** for the efficiency topic of BLM212 Data
+Structures. It was compiled and edited with AI from the course notes; the point
+is to have the whole topic revisable in one place.
+
+## Why measure an algorithm at all?
+
+Time complexity states how running time depends on the size of the input. It is
+not a number but a **function**: it takes the input size `n` and returns the
+number of steps `T(n)`. Measuring it buys four practical things:
+
+- **Prediction** — How long will this run? What is the largest input I can
+  process in a reasonable time?
+- **Comparison** — Given two algorithms that do the same job, which one is more
+  efficient?
+- **Focus** — Which part of the code runs most often? That is where
+  optimisation effort belongs.
+- **Selection** — Which algorithm fits this application?
+
+### How do we define "time"?
+
+There are three reasonable options: elapsed seconds, the number of source lines
+executed, or how many times one particular operation (an addition, say) is
+performed. Which one we pick does not matter — they are all related by
+**constant factors**, and Big-O discards constant factors anyway.
+
+### Experimental measurement versus theoretical analysis
+
+In an experimental study the algorithm is actually coded, run against inputs of
+different sizes, and timed. That is realistic, but it requires writing the
+algorithm, it only tells you about the inputs you tried, and hardware and
+compiler change the result.
+
+Theoretical analysis works from the pseudocode instead. Running time is written
+as a function of `n` and **all possible inputs** are accounted for, so a
+decision can be made without writing code or buying a machine. This is why
+discussions of efficiency run on theoretical analysis.
+
+> Textbooks use *efficiency* and *complexity* more or less interchangeably;
+> both mean running time. When the distinction matters: **time complexity** is
+> the number of steps taken, **space complexity** is the memory required — both
+> measured against input size.
+
+## What happens as n grows?
+
+Every algorithm is fast for small `n`. The difference shows up as `n` grows —
+and it is not "somewhat slower", it is the gap between a microsecond and the
+age of the universe.
+
+```text
+T(n)          n = 10      100        1,000      10,000     magnitude
+------------  ----------  ---------  ---------  ---------  ---------
+5 (constant)  5           5          5          5          atom
+log n         3           6          9          13         amoeba
+√n            3           10         31         100        bird
+n             10          100        1,000      10,000     human
+n log n       30          600        9,000      130,000    house
+n²            100         10,000     10⁶        10⁸        elephant
+n³            1,000       10⁶        10⁹        10¹²       dinosaur
+2ⁿ            1,024       10³⁰       10³⁰⁰      10³⁰⁰⁰     universe
+```
+
+Two extremes tell the whole story. For `n = 60`, `2ⁿ ≈ 10¹⁸` steps — at one
+step per second that takes **as long as the universe has existed**. From the
+other side: even if the input were the size of the entire universe
+(`n = 2⁶⁰`), `log n` would be just **60**. A logarithm barely grows; an
+exponential explodes almost immediately.
+
+One more detail: on a log-log plot **every polynomial is a straight line** —
+`n²`, `n³`, `n⁴` all look the same apart from their slope. An exponential is
+still exponential even on a log-log plot. This is why the `n^c` family counts
+as feasible and the `c^n` family does not.
+
+## Counting loops
+
+An algorithm with no loops and no recursion executes a fixed number of
+instructions; the rest is the speed of the machine, which is rarely the
+deciding factor. Studying efficiency therefore means **studying loops**. Every
+recursion can be turned into a loop anyway.
+
+### Single loops
+
+```c
+// linear — f(n) = n, the body runs 1000 times
+for (i = 0; i < 1000; i++)
+    the loop body
+
+// linear with a step of 2 — f(n) = n/2, the body runs 500 times
+for (i = 0; i < 1000; i = i + 2)
+    the loop body
+
+// logarithmic, multiplying — f(n) = log n, 10 iterations
+for (i = 1; i <= 1000; i *= 2)
+    the loop body
+
+// logarithmic, dividing — f(n) = log n, 10 iterations
+for (i = 1000; i >= 1; i /= 2)
+    the loop body
+```
+
+The distinction sits in one place: if the control variable **increases or
+decreases by a fixed amount** the loop is linear; if it is **multiplied or
+divided** it is logarithmic. Stepping by 2 halves the iteration count but the
+graph is still a straight line — the constant factor is dropped and the answer
+is `O(n)` again. In a logarithmic loop 1000 elements take about 10 iterations
+and 1,000,000 elements about 20.
+
+### Nested loops
+
+The rule is one sentence: **total iterations = outer iterations × inner
+iterations.** The rest is reading which type each loop is.
+
+```c
+// linear logarithmic — f(n) = n log n
+for (i = 1; i <= 10; i++)
+  for (j = 1; j <= 10; j *= 2)
+      the loop body
+
+// quadratic — f(n) = n², inner loop independent of the outer one
+for (i = 1; i <= 10; i++)
+  for (j = 1; j <= 10; j++)
+      the loop body
+
+// dependent quadratic — f(n) = n(n+1)/2
+for (i = 0; i < 10; i++)
+  for (j = 0; j < i; j++)     // inner loop depends on the outer one
+      the loop body
+```
+
+In the dependent quadratic loop the inner loop runs 0, 1, 2, … 9 times: 45
+iterations in total, averaging `45/10 = 4.5 ≈ (n+1)/2`. Multiplied by the outer
+count that gives `n(n+1)/2`. So roughly **half** the full square is scanned —
+and half of it and all of it are both `O(n²)`. Big-O asks about the shape, not
+the ratio.
+
+## Deriving Big-O
+
+`f(n)` is the number of instructions executed for an input of `n` elements.
+However complicated the expression, the **dominant term** in it determines the
+order of magnitude of the result. That term is the Big-O: `O(n)` — *on the
+order of*.
+
+1. **Set every coefficient to 1.** `½n² + ½n → n² + n`. Constant factors depend
+   on the machine and the compiler; they are not what decides the outcome as
+   `n` grows.
+2. **Drop everything but the largest term.** `n² + n → n²`.
+
+The ordering, smallest to largest: `log n`, `n`, `n log n`, `n²`, `n³`, …,
+`n^k`, …, `2ⁿ`, …, `n!`
+
+Two rules, one example: `f(n) = ½n² + ½n → O(n²)`. And another:
+`3n³ + 100n² + 5000 → n³ + n² + 1 → O(n³)` — however large the coefficient 100
+is, it cannot beat `n³`.
+
+> Big-O is an **order of magnitude**, not a duration. An `O(n²)` algorithm can
+> be faster than an `O(n log n)` one for small `n`, because the discarded
+> constants still dominate there. Every efficiency measure assumes a large
+> enough sample.
+
+## The seven efficiency categories
+
+The textbook's standard measure is given for `n = 10,000`. The table runs from
+most to least efficient.
+
+```text
+efficiency            big-O        iterations    estimated time
+--------------------  -----------  ------------  --------------
+Logarithmic           O(log n)     14            microseconds
+Linear                O(n)         10,000        seconds
+Linear logarithmic    O(n log n)   140,000       seconds
+Quadratic             O(n²)        10,000²       minutes
+Polynomial            O(n^k)       10,000^k      hours
+Exponential           O(c^n)       2^10,000      intractable
+Factorial             O(n!)        10,000!       intractable
+```
+
+In practice the boundary sits **between polynomial and exponential**: the `n^c`
+family counts as feasible, while `c^n` and `n!` become unusable the moment the
+input grows a little. A faster computer does not close that gap — when Moore's
+law doubles the speed, an exponential algorithm can handle exactly *one* more
+element.
+
+## Two classic examples
+
+The method never changes: count the loops, multiply the nested ones, take the
+dominant term.
+
+### Adding two matrices — O(n²)
+
+```text
+Algorithm addMatrix (matrix1, matrix2, size, matrix3)
+1  r = 1
+2  loop (r <= size)                      ← outer loop: size times
+   1  c = 1
+   2  loop (c <= size)                   ← inner loop: size times
+      1  matrix3[r,c] = matrix1[r,c] + matrix2[r,c]
+      2  c = c + 1
+   3  r = r + 1
+3  return
+end addMatrix
+```
+
+Each cell of the result needs *one* addition, and there are `size × size`
+cells. A quadratic loop, so `O(size²) → O(n²)`.
+
+### Multiplying two matrices — O(n³)
+
+```text
+Algorithm multiMatrix (matrix1, matrix2, size, matrix3)
+1  loop (not end of row)                 ← size times
+   1  loop (not end of column)           ← size times
+      1  loop (size of row times)        ← size times
+         1  calculate sum of
+              (all row cells) * (all column cells)
+         2  store sum in matrix3
+      2  end loop
+   2  end loop
+2  end loop
+3  return
+end multiMatrix
+```
+
+The difference is a single line: each cell of the result is no longer one
+addition but the sum of the products of a row and a column. That means a third
+loop — a cubic loop, so `O(size³) → O(n³)`.
+
+Subprogram calls count too: if the loop body calls a subprogram of known
+complexity, its cost is **multiplied** by the iteration count. Calling an
+`O(n²)` function inside a loop that runs `n` times gives `O(n³)`.
+
+## Exercises
+
+The five questions from the course notes. Answers follow each one — solve it
+first.
+
+**1. Order these efficiencies from smallest to largest:** `a) n log(n)`,
+`b) n + n² + n³`, `c) 2⁴`, `d) n^0.5`
+
+The order is `2⁴ < n^0.5 < n log(n) < n + n² + n³`. `2⁴ = 16`, which is
+*constant* — it does not depend on `n` at all. `n^0.5 = √n` grows more slowly
+than `n`. The dominant term of the last expression is `n³`.
+
+**2a. If algorithm `XX` has complexity `n²`, what is the complexity of this
+fragment?**
+
+```c
+i = 1
+loop (i <= n)          ← n times
+   j = 1
+   loop (j < n)        ← n−1 times
+      XX ( .... )      ← n² per call
+      j = j + 1
+   i = i + 1
+```
+
+`f(n) = n · (n−1) · n² = n⁴ − n³`, so `O(n⁴)`. The outer loop, the inner loop
+and the call in the body are **multiplied**; then the dominant term is taken.
+
+**2b. If `doIt` has an efficiency factor of `5n`, what is the efficiency of
+this fragment?**
+
+```c
+for (i = 1; i <= n; i++)
+    doIt ( ... )
+```
+
+`f(n) = n · 5n = 5n²`, so `O(n²)`. The coefficient 5 is dropped by the first
+rule.
+
+**3. If `doIt` has efficiency `n²`, what is the efficiency of this fragment?**
+
+```c
+for (i = 1; i < n; i *= 2)
+    doIt ( ... )
+```
+
+`f(n) = log₂n · n²`, so `O(n² log n)`. The trap is `i *= 2`: the loop runs
+`log₂n` times, *logarithmically*, not `n` times.
+
+**4. In an algorithm with efficiency `n³`, one step takes 1 ns. How long does
+an input of 1000 elements take?**
+
+`1000³ × 1 ns = 10⁹ × 10⁻⁹ = 1 second`. The same algorithm would take
+`10¹² × 10⁻⁹ = 1000` seconds, about 17 minutes, for `n = 10,000`. The input
+grew 10-fold and the time grew 1000-fold.
+
+**5. `n = 4096` measures 512 ms and `n = 16,384` measures 1024 ms. What is the
+efficiency of this algorithm?**
+
+The input grew 4-fold while the time only doubled, so the time is proportional
+to `√n`. Check: `√4096 = 64` and `512/64 = 8`; `√16384 = 128` and
+`1024/128 = 8`. The coefficient is the same in both, so `f(n) = 8√n` and the
+answer is `O(n^0.5)`.
+
+The general trick is in that question: "the input grew `k`-fold, by how much
+did the time grow?" The answer gives the class away — doubling means linear,
+quadrupling means quadratic, staying the same means logarithmic.

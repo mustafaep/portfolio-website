@@ -1,0 +1,294 @@
+---
+title: Verimlilik ve Big-O
+summary: 'Bir algoritmanın ne kadar süreceğini kodu çalıştırmadan önce tahmin etmenin yolu: döngü sayma, baskın terim ve yedi verimlilik sınıfı.'
+date: '2026-08-26'
+series: Veri Yapıları
+tags:
+  - algoritma
+  - big-o
+  - veri yapıları
+---
+
+Bu yazı BLM212 Veri Yapıları dersinin verimlilik konusu için hazırlanmış bir
+**çalışma dosyası**. Ders notlarından yola çıkılarak yapay zekâ ile derlendi ve
+düzenlendi; amacı konuyu tek bir yerden tekrar edilebilir hâle getirmek.
+
+## Bir algoritmayı neden ölçeriz?
+
+Zaman karmaşıklığı, koşma süresinin girişin boyutuna nasıl bağlı olduğunu
+söyler. Yani bir sayı değil, bir **fonksiyon**: giriş boyutu `n`'i alır, atılan
+adım sayısı `T(n)`'i verir. Ölçmenin dört pratik karşılığı var:
+
+- **Tahmin** — Program ne kadar sürecek? Makul sürede işleyebileceğim en büyük
+  giriş nedir?
+- **Karşılaştırma** — Aynı işi yapan iki algoritmadan hangisi daha verimli?
+- **Odaklanma** — Kodun en çok koşulan kısmı neresi? Optimizasyon çabası oraya
+  harcanmalı.
+- **Seçim** — Bu uygulamaya uygun algoritma hangisi?
+
+### "Zaman"ı nasıl tanımlarız?
+
+Üç makul seçenek var: saniye cinsinden süre, icra edilen kod satırı sayısı, ya
+da belirli bir işlemin (mesela toplamanın) kaç kez yapıldığı. Hangisini
+seçtiğimizin bir önemi yok — hepsi birbirine **sabit çarpanlarla** bağlıdır ve
+Big-O sabit çarpanları zaten atar.
+
+### Deneysel ölçüm ile teorik analiz
+
+Deneysel çalışmada algoritma gerçekten kodlanır, farklı boyutta girdilerle
+çalıştırılır ve süre ölçülür. Gerçekçidir ama algoritmayı yazmayı gerektirir,
+yalnızca denenen girdiler hakkında bilgi verir ve donanımla derleyici sonucu
+değiştirir.
+
+Teorik analizde ise algoritmanın sözde kodu kullanılır. Koşma süresi `n`'in
+fonksiyonu olarak yazılır ve **tüm olası girişler** hesaba katılır. Kod
+yazmadan, makine almadan karar verilebilir. Verimlilik tartışması bu yüzden
+teorik analiz üzerinden yürür.
+
+> Ders kitaplarında *efficiency* ve *complexity* çoğu zaman eş anlamlı
+> kullanılır; ikisi de koşma süresini kasteder. Ayrım gerektiğinde: **time
+> complexity** atılan adım sayısı, **space complexity** gereken bellektir —
+> ikisi de giriş boyutuna göre ölçülür.
+
+## n büyüdükçe ne oluyor?
+
+Küçük `n`'de her algoritma hızlıdır. Fark `n` büyüdükçe ortaya çıkar — ve fark
+"biraz daha yavaş" değil, mikrosaniye ile evrenin yaşı arasındaki kadardır.
+
+```text
+T(n)          n = 10      100        1.000      10.000     büyüklük
+------------  ----------  ---------  ---------  ---------  ---------
+5 (sabit)     5           5          5          5          atom
+log n         3           6          9          13         amip
+√n            3           10         31         100        kuş
+n             10          100        1.000      10.000     insan
+n log n       30          600        9.000      130.000    ev
+n²            100         10.000     10⁶        10⁸        fil
+n³            1.000       10⁶        10⁹        10¹²       dinozor
+2ⁿ            1.024       10³⁰       10³⁰⁰      10³⁰⁰⁰     evren
+```
+
+İki uç, meseleyi tek başına anlatıyor. `n = 60` için `2ⁿ ≈ 10¹⁸` adımdır —
+saniyede bir adım atılsa **evrenin yaşı kadar** sürer. Tersten bakınca: girdi
+evrenin tamamı kadar (`n = 2⁶⁰`) olsa bile `log n` yalnızca **60**'tır.
+Logaritma neredeyse hiç büyümez, üstel neredeyse hemen patlar.
+
+Bir ayrıntı daha: log-log grafikte **tüm polinomlar doğru görünür** — `n²`,
+`n³`, `n⁴` hepsi düz çizgidir, yalnızca eğimleri farklıdır. Üstel olan ise
+log-log'da bile hâlâ üsteldir. Bu yüzden `n^c` ailesi makul (*feasible*), `c^n`
+ailesi makul değil (*infeasible*) sayılır.
+
+## Döngüleri saymak
+
+Döngü ve özyineleme *içermeyen* bir algoritmada komut sayısı sabittir; geri
+kalanı bilgisayarın hızıdır ve bu genelde belirleyici değildir. Verimlilik
+çalışması bu yüzden **döngülere odaklanır**. Her özyineleme zaten bir döngüye
+dönüştürülebilir.
+
+### Tek döngüler
+
+```c
+// doğrusal — f(n) = n, gövde 1000 kez çalışır
+for (i = 0; i < 1000; i++)
+    the loop body
+
+// adımı 2 olan doğrusal — f(n) = n/2, gövde 500 kez çalışır
+for (i = 0; i < 1000; i = i + 2)
+    the loop body
+
+// logaritmik, çarpan döngü — f(n) = log n, 10 tur
+for (i = 1; i <= 1000; i *= 2)
+    the loop body
+
+// logaritmik, bölen döngü — f(n) = log n, 10 tur
+for (i = 1000; i >= 1; i /= 2)
+    the loop body
+```
+
+Ayrım tek bir yerde: kontrol değişkeni sabit miktarda **artıyor ya da
+azalıyorsa** döngü doğrusaldır, **çarpılıyor ya da bölünüyorsa**
+logaritmiktir. Adımı 2 yapmak tur sayısını yarıya indirir ama grafik hâlâ düz
+bir çizgidir — sabit çarpan atılır, sonuç yine `O(n)`. Logaritmik döngüde 1000
+eleman yaklaşık 10 tur, 1.000.000 eleman yaklaşık 20 tur eder.
+
+### İç içe döngüler
+
+Kural tek cümle: **toplam tur = dış döngünün turu × iç döngünün turu.** Geri
+kalanı iki döngünün tipine bakmaktan ibaret.
+
+```c
+// doğrusal logaritmik — f(n) = n log n
+for (i = 1; i <= 10; i++)
+  for (j = 1; j <= 10; j *= 2)
+      the loop body
+
+// karesel — f(n) = n², iç döngü dıştan bağımsız
+for (i = 1; i <= 10; i++)
+  for (j = 1; j <= 10; j++)
+      the loop body
+
+// bağımlı karesel — f(n) = n(n+1)/2
+for (i = 0; i < 10; i++)
+  for (j = 0; j < i; j++)     // iç döngü dış döngüye bağlı
+      the loop body
+```
+
+Bağımlı karesel döngüde iç döngü sırasıyla 0, 1, 2, … 9 kez çalışır: toplam 45
+tur, ortalama `45/10 = 4,5 ≈ (n+1)/2`. Dış tur sayısıyla çarpılınca `n(n+1)/2`
+çıkar. Yani tam karenin yaklaşık **yarısı** taranır — ve yarısı da, tamamı da
+`O(n²)`'dir. Big-O şekli sorar, oranı değil.
+
+## Big-O'yu türetmek
+
+`n` elemanlı bir girdide icra edilen komut sayısı `f(n)`'dir. Denklem ne kadar
+karmaşık olursa olsun, içindeki **baskın terim** sonucun büyüklük mertebesini
+belirler. İşte o terim Big-O'dur: `O(n)` — *on the order of*.
+
+1. **Katsayıları 1 yap.** `½n² + ½n → n² + n`. Sabit çarpanlar makineye ve
+   derleyiciye bağlıdır; `n` büyürken belirleyici olan onlar değildir.
+2. **En büyük terim dışındakileri at.** `n² + n → n²`.
+
+Sıralama küçükten büyüğe: `log n`, `n`, `n log n`, `n²`, `n³`, …, `n^k`, …,
+`2ⁿ`, …, `n!`
+
+İki kural, tek örnek: `f(n) = ½n² + ½n → O(n²)`. Bir örnek daha:
+`3n³ + 100n² + 5000 → n³ + n² + 1 → O(n³)` — 100 katsayısı ne kadar büyük
+olursa olsun `n³`'ü yenemez.
+
+> Big-O bir **büyüklük mertebesidir**, süre değil. `O(n²)` bir algoritma küçük
+> `n`'de `O(n log n)` olandan hızlı olabilir; atılan sabitler orada hâlâ
+> baskındır. Her verimlilik ölçüsü yeterince büyük bir örneklem varsayar.
+
+## Yedi verimlilik kategorisi
+
+Ders kitabının standart ölçüsü `n = 10.000` üzerinden verilir. Tablo yukarıdan
+aşağı **azalan verimlilik** sırasındadır.
+
+```text
+verimlilik            big-O        tur sayısı    tahmini süre
+--------------------  -----------  ------------  -------------
+Logarithmic           O(log n)     14            mikrosaniye
+Linear                O(n)         10.000        saniye
+Linear logarithmic    O(n log n)   140.000       saniye
+Quadratic             O(n²)        10.000²       dakika
+Polynomial            O(n^k)       10.000^k      saat
+Exponential           O(c^n)       2^10.000      çözülemez
+Factorial             O(n!)        10.000!       çözülemez
+```
+
+Pratikte sınır **polinom ile üstel arasındadır**: `n^c` ailesi makul sayılır,
+`c^n` ve `n!` ailesi girdi biraz büyüdüğü anda kullanılamaz hâle gelir. Aradaki
+fark daha hızlı bir bilgisayarla kapanmaz — Moore yasasıyla hız iki katına
+çıktığında üstel bir algoritmanın işleyebildiği girdi yalnızca *bir* eleman
+artar.
+
+## İki klasik örnek
+
+Yöntem hep aynı: döngüleri say, iç içe olanları çarp, baskın terimi al.
+
+### İki matrisi toplama — O(n²)
+
+```text
+Algorithm addMatrix (matrix1, matrix2, size, matrix3)
+1  r = 1
+2  loop (r <= size)                      ← dış döngü: size kez
+   1  c = 1
+   2  loop (c <= size)                   ← iç döngü: size kez
+      1  matrix3[r,c] = matrix1[r,c] + matrix2[r,c]
+      2  c = c + 1
+   3  r = r + 1
+3  return
+end addMatrix
+```
+
+Sonucun her hücresi *bir* toplama gerektirir ve `size × size` hücre vardır.
+Karesel döngü, yani `O(size²) → O(n²)`.
+
+### İki matrisi çarpma — O(n³)
+
+```text
+Algorithm multiMatrix (matrix1, matrix2, size, matrix3)
+1  loop (not end of row)                 ← size kez
+   1  loop (not end of column)           ← size kez
+      1  loop (size of row times)        ← size kez
+         1  calculate sum of
+              (all row cells) * (all column cells)
+         2  store sum in matrix3
+      2  end loop
+   2  end loop
+2  end loop
+3  return
+end multiMatrix
+```
+
+Fark tek bir satırda: sonucun her hücresi artık tek bir toplama değil, bir
+satır ile bir sütunun çarpımlarının toplamıdır. Bu da üçüncü bir döngü demek —
+kübik döngü, yani `O(size³) → O(n³)`.
+
+Alt program çağrısı da sayılır: döngü gövdesinde karmaşıklığı bilinen bir alt
+program çağrılıyorsa onun maliyeti tur sayısıyla **çarpılır**. `n` kez dönen
+bir döngü içinde `O(n²)` bir fonksiyon çağırmak `O(n³)` eder.
+
+## Alıştırmalar
+
+Ders notlarındaki beş soru. Cevaplar hemen altlarında — önce kendin çöz.
+
+**1. Aşağıdaki verimlilikleri küçükten büyüğe sıralayın:** `a) n log(n)`,
+`b) n + n² + n³`, `c) 2⁴`, `d) n^0,5`
+
+Sıralama `2⁴ < n^0,5 < n log(n) < n + n² + n³`. `2⁴ = 16`, yani *sabit* — `n`'e
+hiç bağlı değil. `n^0,5 = √n`, `n`'den yavaş büyür. Son ifadenin baskın terimi
+`n³`'tür.
+
+**2a. `XX` algoritmasının karmaşıklığı `n²` ise, bu parçanın karmaşıklığı
+nedir?**
+
+```c
+i = 1
+loop (i <= n)          ← n kez
+   j = 1
+   loop (j < n)        ← n−1 kez
+      XX ( .... )      ← her çağrı n²
+      j = j + 1
+   i = i + 1
+```
+
+`f(n) = n · (n−1) · n² = n⁴ − n³`, yani `O(n⁴)`. Dış döngü, iç döngü ve
+gövdedeki çağrı **çarpılır**; sonra baskın terim alınır.
+
+**2b. `doIt`'in verimlilik çarpanı `5n` ise, bu parçanın verimliliği nedir?**
+
+```c
+for (i = 1; i <= n; i++)
+    doIt ( ... )
+```
+
+`f(n) = n · 5n = 5n²`, yani `O(n²)`. 5 katsayısı birinci kuralda atılır.
+
+**3. `doIt`'in verimliliği `n²` ise, bu parçanın verimliliği nedir?**
+
+```c
+for (i = 1; i < n; i *= 2)
+    doIt ( ... )
+```
+
+`f(n) = log₂n · n²`, yani `O(n² log n)`. Buradaki tuzak `i *= 2`: döngü `n` kez
+değil, *logaritmik* olarak `log₂n` kez döner.
+
+**4. Verimliliği `n³` olan bir algoritmada bir adım 1 ns sürüyorsa, 1000
+elemanlı girdi ne kadar sürer?**
+
+`1000³ × 1 ns = 10⁹ × 10⁻⁹ = 1 saniye`. Aynı algoritma `n = 10.000` için
+`10¹² × 10⁻⁹ = 1000` saniye, yaklaşık 17 dakika sürerdi. Girdi 10 kat artınca
+süre 1000 kat arttı.
+
+**5. `n = 4096` için 512 ms, `n = 16.384` için 1024 ms ölçülüyor. Bu
+algoritmanın verimliliği nedir?**
+
+Girdi 4 katına çıkarken süre yalnızca 2 katına çıkmış, demek ki süre `√n` ile
+orantılı. Kontrol: `√4096 = 64` ve `512/64 = 8`; `√16384 = 128` ve
+`1024/128 = 8`. Katsayı ikisinde de aynı, yani `f(n) = 8√n` ve sonuç `O(n^0,5)`.
+
+Buradaki genel ipucu şu soruda: "girdi `k` katına çıkınca süre kaç katına
+çıktı?" Cevap sınıfı ele verir — iki katına çıkıyorsa doğrusal, dört katına
+çıkıyorsa karesel, değişmiyorsa logaritmik.

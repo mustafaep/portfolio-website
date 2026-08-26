@@ -37,6 +37,12 @@ export type BlogFrontmatter = {
   summary: string;
   date: string;
   tags: string[];
+  /**
+   * Optional heading the post is filed under on the blog index. Written in the
+   * language of the file, so the same post can be "Veri Yapilari" in Turkish and
+   * "Data Structures" in English. Posts without one are listed on their own.
+   */
+  series?: string;
   draft?: boolean;
 };
 
@@ -137,6 +143,10 @@ export function getPost(slug: string, locale: Locale): BlogDoc | null {
     summary: requireString(data.summary, 'summary', label),
     date: requireString(data.date, 'date', label),
     tags: Array.isArray(data.tags) ? requireStringArray(data.tags, 'tags', label) : [],
+    series:
+      typeof data.series === 'string' && data.series.trim() !== ''
+        ? data.series
+        : undefined,
     draft: data.draft === true,
     body: content,
   };
@@ -155,6 +165,42 @@ export function getPostSlugs(locale: Locale): string[] {
     const post = getPost(slug, 'en') ?? getPost(slug, 'tr');
     return post !== null && !post.draft;
   });
+}
+
+export type PostSeries = {
+  /** null is the catch-all group for posts that declare no series. */
+  name: string | null;
+  posts: BlogDoc[];
+};
+
+/**
+ * Published posts grouped under their `series` heading, newest first within each
+ * group. Groups appear in the order their newest post does, and posts with no
+ * series are collected into a single trailing group. Returns one unnamed group
+ * when nothing on the site uses a series, so the index stays a flat list until
+ * the first series exists.
+ */
+export function getPostsBySeries(locale: Locale): PostSeries[] {
+  const posts = getAllPosts(locale);
+  if (!posts.some((post) => post.series)) {
+    return posts.length > 0 ? [{ name: null, posts }] : [];
+  }
+
+  const groups: PostSeries[] = [];
+  const loose: BlogDoc[] = [];
+
+  for (const post of posts) {
+    if (!post.series) {
+      loose.push(post);
+      continue;
+    }
+    const group = groups.find((g) => g.name === post.series);
+    if (group) group.posts.push(post);
+    else groups.push({ name: post.series, posts: [post] });
+  }
+
+  if (loose.length > 0) groups.push({ name: null, posts: loose });
+  return groups;
 }
 
 /** All tags in use, for the blog index. */

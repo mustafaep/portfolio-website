@@ -114,11 +114,18 @@ için yayımlanmıyor. Yayımlamak için o satırı sil.
 title: Başlık
 summary: Listede, arama sonuçlarında ve RSS'te görünen tam cümle.
 date: '2026-08-01'
+series: Veri Yapıları
 tags:
   - architecture
 draft: true
 ---
 ```
+
+`series` isteğe bağlıdır ve yazıyı blog listesinde bir başlık altında toplar.
+Değer dosyanın diliyle yazılır — aynı yazı Türkçede `Veri Yapıları`, İngilizcede
+`Data Structures` olabilir. `series` taşımayan yazılar listenin sonundaki
+"Diğer" başlığı altında toplanır; hiçbir yazı `series` kullanmıyorsa liste
+başlıksız kalır.
 
 ## Yayınlama
 

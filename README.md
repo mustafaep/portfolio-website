@@ -115,6 +115,7 @@ title: Başlık
 summary: Listede, arama sonuçlarında ve RSS'te görünen tam cümle.
 date: '2026-08-01'
 series: Veri Yapıları
+seriesOrder: 1
 tags:
   - architecture
 draft: true
@@ -127,13 +128,31 @@ Değer dosyanın diliyle yazılır — aynı yazı Türkçede `Veri Yapıları`,
 "Diğer" başlığı altında toplanır; hiçbir yazı `series` kullanmıyorsa liste
 başlıksız kalır.
 
+`seriesOrder` de isteğe bağlıdır ve seri içindeki okuma sırasını belirler
+(küçük olan üstte). Ders notları yazıldıkları sırada değil, anlatıldıkları sırada
+okunur; listenin yeniden-eskiye tarih sıralaması bunu ters çevirir. `seriesOrder`
+taşımayan yazılar serinin sonuna düşer ve kendi aralarında tarih sırasını korur.
+
 Gövdede Markdown'ın yanında `components/mdx.tsx` içinde kayıtlı bileşenler de
-kullanılabilir. `components/complexity/` altındakiler Big-O yazısı için yazıldı
-ve hepsi `lang="tr" | "en"` alır: `GrowthChart` (crosshair'lı büyüme eğrileri),
-`GrowthCalculator` (n kaydıracı), `GrowthNumbersTable`, `CategoryTable`,
-`HalfSquareFigure`, `BigOLadder`, ayrıca `Figure`, `Exercises` ve `Exercise`.
-Renkleri `globals.css` içindeki `--c-s1`…`--c-s7` sıralı rampasından alırlar;
-rampa tek hue'lu ve iki temada da doğrulandı, yeni bir renk ailesi eklemez.
+kullanılabilir. Ortak olanlar `components/study/` altında: `Figure` (başlıklı
+şema çerçevesi), `Exercises` + `Exercise` (`<details>` içinde cevap) ve
+`Stepper` + `CodePanel` (adım adım anlatımların kontrol şeridi). Konuya özel
+olanlar kendi klasörlerinde ve hepsi `lang="tr" | "en"` alır:
+
+| Klasör | Bileşenler |
+| --- | --- |
+| `components/complexity/` | `GrowthChart` (crosshair'lı büyüme eğrileri), `GrowthCalculator` (n kaydıracı), `GrowthNumbersTable`, `CategoryTable`, `HalfSquareFigure`, `BigOLadder` |
+| `components/adt/` | `PointerTrace` (adım adım bellek), `AtomicCompositeFigure`, `AdtModelFigure`, `VoidPointerFigure`, `CallFlowFigure` |
+| `components/linked-list/` | `LinkedListLab` (altı ekleme/silme senaryosu), `ArrayVsListTable`, `SearchOutcomesTable`, `HeadNodeFigure`, `SearchFigure`, `CircularListFigure`, `DoublyLinkedFigure`, `ListAdtFigure` |
+
+`components/primitives.tsx` içindeki `FactList` de MDX'e açıktır; terim/değer
+biçimindeki tanımlar için kullanılır.
+
+Büyüklük gösteren figürler renklerini `globals.css` içindeki `--c-s1`…`--c-s7`
+sıralı rampasından alır; rampa tek hue'lu ve iki temada da doğrulandı, yeni bir
+renk ailesi eklemez. Şema niteliğindeki figürlerde renk kimlik değil *durum*
+taşır: vurgulanan şey accent'i alır, geri kalanı çizgi ve muted tokenlarında
+kalır.
 
 ## Yayınlama
 

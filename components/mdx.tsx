@@ -2,11 +2,24 @@ import { MDXRemote } from 'next-mdx-remote/rsc';
 import Link from 'next/link';
 import type { ComponentPropsWithoutRef, ComponentType } from 'react';
 
-import { Exercise, Exercises } from '@/components/complexity/exercise';
-import { BigOLadder, Figure, HalfSquareFigure } from '@/components/complexity/figures';
+import { AdtModelFigure, AtomicCompositeFigure, CallFlowFigure, VoidPointerFigure } from '@/components/adt/figures';
+import { PointerTrace } from '@/components/adt/pointer-trace';
+import { BigOLadder, HalfSquareFigure } from '@/components/complexity/figures';
 import { GrowthCalculator } from '@/components/complexity/growth-calculator';
 import { GrowthChart } from '@/components/complexity/growth-chart';
 import { CategoryTable, GrowthNumbersTable } from '@/components/complexity/tables';
+import {
+  CircularListFigure,
+  DoublyLinkedFigure,
+  HeadNodeFigure,
+  ListAdtFigure,
+  SearchFigure,
+} from '@/components/linked-list/figures';
+import { LinkedListLab } from '@/components/linked-list/list-lab';
+import { FactList } from '@/components/primitives';
+import { ArrayVsListTable, SearchOutcomesTable } from '@/components/linked-list/tables';
+import { Exercise, Exercises } from '@/components/study/exercise';
+import { Figure } from '@/components/study/figure';
 
 /**
  * Rendered on the server, so the full prose is present in the HTML source. The
@@ -31,15 +44,29 @@ const components = {
       </a>
     );
   },
+  AdtModelFigure,
+  ArrayVsListTable,
+  AtomicCompositeFigure,
   BigOLadder,
+  CallFlowFigure,
   CategoryTable,
+  CircularListFigure,
+  DoublyLinkedFigure,
   Exercise,
   Exercises,
+  FactList,
   Figure,
   GrowthCalculator,
   GrowthChart,
   GrowthNumbersTable,
   HalfSquareFigure,
+  HeadNodeFigure,
+  LinkedListLab,
+  ListAdtFigure,
+  PointerTrace,
+  SearchFigure,
+  SearchOutcomesTable,
+  VoidPointerFigure,
 };
 
 export function Mdx({ source }: { source: string }) {

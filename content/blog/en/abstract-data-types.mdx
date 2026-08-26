@@ -1,0 +1,340 @@
+---
+title: Abstract Data Types
+summary: 'Packing data together with the operations on it and hiding the inside: from the concepts through to writing generic code in C.'
+date: '2026-08-26'
+series: Data Structures
+seriesOrder: 1
+tags:
+  - adt
+  - c
+  - data structures
+---
+
+This post is a **study file** for the abstract data type topic of BLM212 Data
+Structures. It was compiled and edited with AI from the course notes. The memory
+walkthrough in it can be stepped through — the confusing part of pointers is
+which cell points at which, and that is a thing to watch rather than read.
+
+## How we got here
+
+The abstract data type did not appear all at once; it is the latest step in
+programming's effort to **cope with complexity**. Each stage arrived when the
+previous one hit its limit.
+
+- **Spaghetti code** — Linear programs where the flow of logic winds through the
+  whole program like pasta on a plate. Which part jumps where cannot be followed.
+- **Modular programming** — The program is organised into functions. A large
+  improvement, but the coding technique is still linear.
+- **Structured programming** — Its principles were formulated in the 1970s by
+  computer scientists such as Edsger Dijkstra and Niklaus Wirth, and they still
+  hold.
+
+Structured programming organised the *code*. The next step was organising the
+*data* — packing it together with the operations that can be performed on it and
+hiding the rest. That is the ADT.
+
+## Atomic data or composite data?
+
+The distinction is one question: **when it is split into parts, do the parts
+still mean anything?** If not it is atomic; if so it is composite.
+
+<Figure caption="An atomic data type = a set of values sharing the same properties + a set of operations on those values. For example: integer = {…, −1, 0, 1, …} + {+, −, *, /, %, ++, …}">
+  <AtomicCompositeFigure lang="en" />
+</Figure>
+
+The standard atomic types all come from the same mould — a set of values and the
+operations defined on that set:
+
+<FactList items={[
+  { term: "integer", value: "Values: −∞ … −2, −1, 0, 1, 2 … ∞ · Operations: * + - % / ++ --" },
+  { term: "floating point", value: "Values: −∞ … 0.0 … ∞ · Operations: * + - /" },
+  { term: "character", value: "Values: NUL, 'A', 'B' … 'a', 'b' … ~ · Operations: < >" },
+]} />
+
+## What is a data structure?
+
+A data structure is **a collection of atomic and composite data held together by
+defined relationships.** What "structure" means here is the *set of rules* that
+keeps the data together: the elements, plus the relationships that connect them.
+
+In an array the elements are homogeneous, all of the same type, and the
+relationship between them is position — the order is the index itself. In a
+record the fields are heterogeneous, there is a defined key, and there is no
+positional relationship between fields. Data structures can also nest: arrays of
+arrays, arrays of records, records of records. An element of a data structure can
+be another data structure.
+
+The four familiar structures differ in how the relationship is formed. In a
+**matrix** each element relates to its neighbours in two dimensions; in a
+**linear list** each element has exactly one successor; in a **tree** each
+element has one parent but may have several children; in a **graph** there is no
+restriction on the relationships at all.
+
+### Pseudocode
+
+The fake programming language used to describe algorithms. Its structure is close
+to a high-level language but it is exempt from the unnecessary detail — type
+declarations, semicolons, library calls — so attention stays on the *logic*
+rather than the syntax.
+
+```text
+Algorithm deviation
+   Pre   nothing
+   Post  average and numbers with their deviation printed
+1 loop (not end of file)
+  1 read number into array
+  2 add number to total
+  3 increment count
+2 end loop
+3 set average to total / count
+4 print average
+end deviation
+```
+
+## What is an ADT?
+
+The essence of abstraction: we know **what** a data type can do, and **how** it
+does it is hidden from us. The user of an ADT is not concerned with how the work
+is done, only with what can be done.
+
+<Figure caption="Data enters, is read, changed and deleted through a passageway that sits partly inside and partly outside the ADT. Only public functions are reachable through that interface; the private functions and the data structure itself are closed off.">
+  <AdtModelFigure lang="en" />
+</Figure>
+
+By definition an ADT is a *data declaration* packaged together with the
+operations that are meaningful for that data type. It has three components: the
+declaration of the data, the declaration of the operations, and the
+**encapsulation** of the two. The golden rule: every reference to and
+manipulation of the data must go *only* through the defined interface. The most
+common mistake is exactly the violation of that — letting the application program
+reach the data structure directly. More than one instance of the structure must
+also be able to exist at once: two separate stacks, three separate lists. Typical
+ADTs: List, Stack, Queue, Tree, Heap, Graph.
+
+Why so strict? If the application can touch the data structure directly, then the
+day you change the ADT's internals — moving from an array to a linked list — you
+have to rewrite that application too. As long as the interface holds still, the
+inside is free to change.
+
+## Two ways to implement an ADT
+
+There are two basic ways to implement a list ADT: an **array** and a **linked
+list**. The difference is where the ordering comes from: *physical position* in
+an array, *pointers* in a linked list.
+
+In an array the list's sequence is carried by the indices. Search can be very
+fast, but insertion and deletion are complicated and slow — elements have to be
+shifted — and the size is fixed up front. In a linked list each element holds the
+*location* of the next one; an element is data plus one or more links. Insertion
+and deletion are easy, nothing shifts, and the size grows and shrinks at run
+time; in exchange, because the elements are not physically contiguous, only
+**sequential search** is possible.
+
+The nodes of a linked list are called **self-referential** structures: each
+instance of the structure contains a pointer to another instance of the same
+type. The data part may be a single field or a structure with several — but it
+always behaves as a single field. An empty list means the list pointer is null
+and there are no nodes.
+
+## Pointers
+
+A pointer is a data type that **refers directly to a value in another cell by
+using its memory address.** Linked lists, trees, ADTs — all of them are built on
+this, so it has to sit firmly.
+
+```c
+int a = 100;
+printf("%d", a);    // 100  — the value
+printf("%p", &a);   // 1024 — the address
+
+int *p = &a;
+printf("%p", p);    // 1024 — the contents of p
+printf("%d", *p);   // 100  — the value of a
+```
+
+`&` is the address operator: it gives the variable's address in memory. `*` is
+the dereferencing operator: it reaches the value the pointer points at. The three
+things that get confused are these — `p` is an *address*, `*p` is the *value* at
+that address, and `&p` is the address p itself sits at. All three are different
+numbers.
+
+### Step through memory
+
+Run the same program line by line: at each step, watch which cell points at
+which, and what gets printed. Including the **pointer to a pointer, `**q`**.
+
+<PointerTrace lang="en" />
+
+The step to watch is the last one: `**q` hops twice — first to p, which q points
+at, and from there to a, which p points at. All three expressions give the same
+value, **100**, but by three different routes.
+
+### Memory management
+
+<FactList items={[
+  { term: "Static allocation", value: "Memory is allocated at compilation time; the size is known up front." },
+  { term: "Dynamic allocation", value: "Memory is allocated at execution time; data structures can grow and shrink." },
+  { term: "malloc", value: "Returns void*: intPtr = (int*) malloc(sizeof(int));" },
+  { term: "calloc", value: "calloc(n, size) allocates a block of n and zeroes it; malloc does not." },
+]} />
+
+## Generic code
+
+You have written a stack ADT. Now you want it to work for `int`s, for `float`s
+and for records too — **without copying the code**. C has two tools for that:
+`void*` and the pointer to a function.
+
+### Pointer to void
+
+C is a strongly typed language: in operations like assignment and comparison the
+types must be compatible or must be *cast*. **The one exception is `void*`** — it
+can be assigned without a cast, which makes it a *generic pointer* able to stand
+for any data type.
+
+```c
+int   i = 7;
+float f = 3.5;
+void* vp;
+
+vp = &i;                    // fine
+vp = &f;                    // also fine
+
+printf("%d", *vp);          // ERROR — a void* cannot be dereferenced
+printf("%d", *(int*)vp);    // correct — cast to the right type first
+```
+
+One thing that gets confused easily: `void*` is **not a null pointer**. A null
+pointer means "it points nowhere"; a void pointer does point somewhere — what is
+unknown is *what type is there*.
+
+<Figure caption="The asymmetry is the whole story: free on the way in, cast on the way out. Only the application program knows the type; the ADT does not.">
+  <VoidPointerFigure lang="en" />
+</Figure>
+
+A generic node has two parts: the **data** and the **link**. The link is a
+pointer to the node structure itself. The data is held as a `void*` so that it
+can be any type — which is what lets a single `createNode` work for all of them.
+
+```c
+typedef struct node
+{
+    void*        dataPtr;   // data: can be any type
+    struct node* link;      // link: pointer to its own type (self-referential)
+} NODE;
+
+/* Creates a node in dynamic memory, puts the data pointer inside it
+   and returns the node's address. */
+NODE* createNode (void* itemPtr)
+{
+    NODE* nodePtr;
+    nodePtr = (NODE*) malloc (sizeof (NODE));
+    nodePtr->dataPtr = itemPtr;
+    nodePtr->link    = NULL;
+    return nodePtr;
+}
+```
+
+### Pointer to function
+
+Functions occupy memory too, and **a function's name is a constant pointer to the
+first byte of its code.** When declaring a pointer to a function the pointer must
+be wrapped in parentheses — `int (*f)(void*, void*)`. Without them C reads the
+*return type* as the pointer.
+
+Why is it needed? The generic `larger` function takes two `void*` values but
+**cannot compare them** — it does not know which type to cast to. Only the
+application program knows the type. The solution: hand the comparison off to a
+`compare` function the application writes, and pass that function's *address* as
+a parameter.
+
+```c
+/* Generic — returns the larger of two void* values */
+void* larger (void* dataPtr1, void* dataPtr2,
+              int (*ptrToCmpFun)(void*, void*))
+{
+    if ((*ptrToCmpFun) (dataPtr1, dataPtr2) > 0)
+        return dataPtr1;
+    else
+        return dataPtr2;
+}
+
+/* Application-specific — the only place that knows about ints */
+int compare (void* ptr1, void* ptr2)
+{
+    if (*(int*)ptr1 >= *(int*)ptr2) return  1;
+    else                            return -1;
+}
+
+int main (void)
+{
+    int i = 7, j = 8, lrg;
+    lrg = *(int*) larger (&i, &j, compare);   // a function name is an address
+    printf ("Larger value is: %d\n", lrg);    // Larger value is: 8
+}
+```
+
+<Figure caption="① main hands larger the two addresses and the address of compare. ② larger delegates the comparison to compare. ③ compare returns a flag. ④ larger returns the address of the larger value; main casts it to int* and reads it. The same larger works with floats given a new compare.">
+  <CallFlowFigure lang="en" />
+</Figure>
+
+The whole picture: `void*` lets the ADT carry the *data* without knowing its
+type, and the pointer to a function lets it perform the *operations* without
+knowing the type. Together they let a single list, stack or queue implementation
+work with every data type — which is the ADT's real promise.
+
+## Check yourself
+
+<Exercises>
+
+<Exercise n="1" question="Is the integer 4562 atomic or composite? And a phone number?">
+
+4562 is **atomic**: it can be split into digits, but the parts are not the same
+thing as the original — 4, 5, 6, 2 and 4562 are different things.
+
+A phone number is **composite**: it splits into a country code, a city code and a
+number, and every subfield means something on its own.
+
+</Exercise>
+
+<Exercise n="2" question="What would happen if the application program were allowed to reach the ADT's data structure directly?">
+
+The ADT's internals would become unchangeable.
+
+The day you moved from an array to a linked list, you would have to rewrite every
+application that touches that data structure. This is exactly why encapsulation
+exists: as long as the interface holds still, the inside is free to change.
+
+</Exercise>
+
+<Exercise n="3" question="With a = 100 and p = &a, what do p, *p and &p give?">
+
+`p` → **1024**, a's address. `*p` → **100**, the value at that address. `&p` →
+**1032**, the address p itself sits at.
+
+All three are different numbers. The walkthrough above shows it step by step.
+
+</Exercise>
+
+<Exercise n="4" question="Why is a void* not a null pointer?">
+
+A null pointer says "I point nowhere". A void pointer does point somewhere — what
+is unknown is *what* the address points at, that is, what type of value sits
+there.
+
+This is why no cast is needed when assigning a `void*` but one is required when
+reading it: you can store an address without knowing its type, but not the other
+way round.
+
+</Exercise>
+
+<Exercise n="5" question="What happens if the parentheses are removed from int (*f)(void*, void*)?">
+
+It becomes `int *f(void*, void*)`, which means something else entirely: not a
+pointer to a function but **a function returning `int*`**.
+
+The parentheses detach the `*` from the return type and bind it to `f`. That is
+why they are mandatory when declaring a pointer to a function.
+
+</Exercise>
+
+</Exercises>

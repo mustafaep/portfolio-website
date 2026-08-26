@@ -1,0 +1,330 @@
+---
+title: Soyut Veri Tipi
+summary: 'Veriyi ve üzerindeki işlemleri tek pakette toplayıp iç yapısını gizlemek: kavramlardan başlayıp C''de generic kod yazmaya kadar.'
+date: '2026-08-26'
+series: Veri Yapıları
+seriesOrder: 1
+tags:
+  - adt
+  - c
+  - veri yapıları
+---
+
+Bu yazı BLM212 Veri Yapıları dersinin soyut veri tipi konusu için hazırlanmış
+bir **çalışma dosyası**. Ders notlarından yola çıkılarak yapay zekâ ile derlendi
+ve düzenlendi. İçindeki bellek izleyicisi adım adım ilerletilebilir — işaretçi
+konusunun kafa karıştıran kısmı zaten hangi hücrenin hangisini gösterdiği.
+
+## Buraya nasıl gelindi?
+
+Soyut veri tipi bir anda ortaya çıkmadı; programlamanın **karmaşıklıkla baş
+etme** çabasının son adımı. Her aşama bir öncekinin sınırına çarpınca doğdu.
+
+- **Spaghetti code** — Mantık akışının bir tabaktaki makarna gibi program
+  boyunca dolandığı doğrusal programlar. Kodun neresinden nereye atlandığı takip
+  edilemez.
+- **Modular programming** — Program fonksiyonlarla organize edilir. İyileşme
+  büyük, ama kodlama tekniği hâlâ doğrusaldır.
+- **Structured programming** — Temel ilkelerini 1970'lerde Edsger Dijkstra ve
+  Niklaus Wirth gibi bilgisayar bilimcileri formüle etti; bugün hâlâ geçerli.
+
+Yapısal programlama *kodu* düzenledi. Sıradaki adım *veriyi* düzenlemekti —
+veriyi, üzerinde yapılabilecek işlemlerle birlikte paketleyip geri kalanını
+gizlemek. ADT bu.
+
+## Atomik veri mi, bileşik veri mi?
+
+Ayrım tek bir soruda: **parçalara ayrılınca parçalar hâlâ anlamlı mı?** Değilse
+atomik, anlamlıysa bileşik.
+
+<Figure caption="Bir atomik veri tipi = aynı özellikleri taşıyan değerler kümesi + o değerler üzerindeki işlemler kümesi. Örnek: integer = {…, −1, 0, 1, …} + {+, −, *, /, %, ++, …}">
+  <AtomicCompositeFigure lang="tr" />
+</Figure>
+
+Standart atomik tiplerin ikisi de aynı kalıptan çıkar — bir değerler kümesi ve o
+kümede tanımlı işlemler:
+
+<FactList items={[
+  { term: "integer", value: "Değerler: −∞ … −2, −1, 0, 1, 2 … ∞ · İşlemler: * + - % / ++ --" },
+  { term: "floating point", value: "Değerler: −∞ … 0.0 … ∞ · İşlemler: * + - /" },
+  { term: "character", value: "Değerler: NUL, 'A', 'B' … 'a', 'b' … ~ · İşlemler: < >" },
+]} />
+
+## Veri yapısı nedir?
+
+Veri yapısı, **atomik ve bileşik verilerin tanımlanmış ilişkilerle bir kümede
+toplanmasıdır.** "Yapı" derken kastedilen, verileri bir arada tutan *kurallar
+kümesidir*: öğeler artı öğeleri birbirine bağlayan ilişkiler.
+
+Bir dizide elemanlar homojendir, hepsi aynı tiptedir ve aralarındaki ilişki
+konumdur — sıra, indeksin kendisidir. Bir kayıtta ise alanlar heterojendir,
+tanımlı bir anahtar vardır ve alanlar arasında konum ilişkisi yoktur. Veri
+yapıları iç içe de olabilir: dizilerin dizisi, kayıtların dizisi, kayıtların
+kaydı. Bir veri yapısının öğesi başka bir veri yapısı olabilir.
+
+Bilinen dört yapı, ilişkinin nasıl kurulduğuna göre ayrılır: **matrix**'te her
+eleman komşularıyla iki boyutta ilişkilidir, **linear list**'te her elemanın tek
+bir halefi vardır, **tree**'de her elemanın tek ebeveyni ama birden çok çocuğu
+olabilir, **graph**'ta ise ilişkilerde hiç kısıt yoktur.
+
+### Sözde kod
+
+Algoritmaları anlatırken kullanılan sahte programlama dili. Yapısı üst seviye
+dillere yakındır ama gereksiz ayrıntılardan (tip bildirimi, noktalı virgül,
+kütüphane çağrısı) muaftır — böylece dikkat sözdizimine değil *mantığa* kalır.
+
+```text
+Algorithm deviation
+   Pre   nothing
+   Post  average and numbers with their deviation printed
+1 loop (not end of file)
+  1 read number into array
+  2 add number to total
+  3 increment count
+2 end loop
+3 set average to total / count
+4 print average
+end deviation
+```
+
+## ADT nedir?
+
+Soyutlamanın özü: bir veri türünün **ne yapabildiğini** biliriz, **nasıl
+yaptığı** ise bizden gizlidir. ADT kullanıcısı işin nasıl yapıldığıyla değil,
+neler yapabileceğiyle ilgilenir.
+
+<Figure caption="Veri, ADT'nin kısmen içinde kısmen dışında duran bir geçiş yolundan girer, okunur, değişir ve silinir. Bu arayüzden yalnızca public fonksiyonlara erişilir; private fonksiyonlar ve veri yapısının kendisi dışarıya kapalıdır.">
+  <AdtModelFigure lang="tr" />
+</Figure>
+
+Tanım olarak ADT, o veri türü için anlamlı olan işlemlerle birlikte paketlenmiş
+bir *veri deklarasyonudur*. Üç bileşeni var: verinin bildirimi, işlemlerin
+bildirimi ve ikisinin **kapsüllenmesi**. Altın kural şu: verilere yapılan tüm
+referanslar ve manipülasyonlar *yalnızca* tanımlı arayüzden geçmelidir. En
+yaygın hata da tam bunun ihlali — uygulama programının veri yapısına doğrudan
+erişmesine izin vermek. Ayrıca yapının birden fazla sürümü aynı anda var
+olabilmelidir: iki ayrı yığın, üç ayrı liste. Tipik ADT'ler: List, Stack, Queue,
+Tree, Heap, Graph.
+
+Neden bu kadar katı? Uygulama veri yapısına doğrudan dokunabilirse, ADT'nin iç
+yapısını değiştirdiğin gün — diziden bağlı listeye geçtiğinde — o uygulamayı da
+baştan yazman gerekir. Arayüz sabit kaldığı sürece iç yapı serbestçe değişebilir.
+
+## ADT'yi gerçekleştirmenin iki yolu
+
+Bir liste ADT'sini gerçekleştirmenin iki temel yolu var: **dizi** ve **bağlı
+liste**. Fark, sıralamanın nereden geldiğinde: dizide *fiziksel konumdan*, bağlı
+listede *işaretçilerden*.
+
+Dizide listenin ardışıl oluşu indekslerle sağlanır. Arama çok hızlı olabilir, ama
+ekleme ve silme karmaşık ve yavaştır — elemanların kaydırılması gerekir — ve
+boyut baştan belirlenir. Bağlı listede her eleman bir sonrakinin *konumunu*
+içerir; eleman, veri artı bir ya da daha fazla bağdır. Ekleme ve silme kolaydır,
+kaydırma yoktur, boyut çalışma anında büyüyüp küçülür; buna karşılık elemanlar
+fiziksel olarak ardışık olmadığı için yalnızca **sıralı arama** yapılabilir.
+
+Bağlı listedeki düğümlere **self-referential** yapılar denir: yapının her örneği,
+aynı tipteki başka örneklere işaretçi içerir. Veri kısmı tek alan da olabilir,
+birkaç alanlı bir yapı da — ama her zaman tek bir alan gibi davranır. Boş liste
+demek, liste işaretçisinin null olması ve hiç düğüm bulunmaması demektir.
+
+## İşaretçiler
+
+İşaretçi, **bellek adresini kullanarak başka bir hücredeki değere doğrudan
+başvuran** bir veri türüdür. Bağlı listeler, ağaçlar, ADT'ler — hepsi bunun
+üzerine kurulu, o yüzden burası sağlam oturmalı.
+
+```c
+int a = 100;
+printf("%d", a);    // 100  — değer
+printf("%p", &a);   // 1024 — adres
+
+int *p = &a;
+printf("%p", p);    // 1024 — p'nin içeriği
+printf("%d", *p);   // 100  — a'nın değeri
+```
+
+`&` adres operatörüdür: değişkenin bellekteki adresini verir. `*` ise
+dereferencing operatörü: işaretçinin işaret ettiği değere erişir. Karışan üç şey
+şunlar — `p` bir *adrestir*, `*p` o adresteki *değerdir*, `&p` ise p'nin kendisinin
+durduğu adrestir. Üçü farklı sayılardır.
+
+### Adım adım bellek
+
+Aynı programı satır satır çalıştır: her adımda hangi hücrenin hangi hücreyi
+gösterdiğini ve ekrana ne yazıldığını izle. **İşaretçi işaretçisi (`**q`)**
+dahil.
+
+<PointerTrace lang="tr" />
+
+Dikkat edilecek yer son adım: `**q` iki kez atlar — önce q'nun gösterdiği p'ye,
+oradan p'nin gösterdiği a'ya. Üç ifade de aynı değeri, **100**'ü verir; ama üç
+farklı yoldan.
+
+### Bellek yönetimi
+
+<FactList items={[
+  { term: "Static allocation", value: "Bellek tahsisi derleme anında yapılır; boyut baştan bellidir." },
+  { term: "Dynamic allocation", value: "Bellek tahsisi koşma anında yapılır; veri yapıları büyüyüp küçülebilir." },
+  { term: "malloc", value: "void* döndürür: intPtr = (int*) malloc(sizeof(int));" },
+  { term: "calloc", value: "calloc(n, size) n adetlik blok tahsis eder ve sıfırlar; malloc sıfırlamaz." },
+]} />
+
+## Generic kod
+
+Bir yığın ADT'si yazdın. Şimdi `int`'ler için de, `float`'lar için de, kayıtlar
+için de çalışsın istiyorsun — **kodu kopyalamadan**. C'nin bunun için iki aracı
+var: `void*` ve fonksiyon işaretçisi.
+
+### Pointer to void
+
+C "strongly typed" bir dildir: atama ve karşılaştırma gibi işlemlerde türler
+uyumlu olmalı ya da *cast* edilmelidir. **Tek istisna `void*`'dır** — cast
+yapmadan atanabilir, yani her veri türünü temsil edebilen bir *generic
+pointer*'dır.
+
+```c
+int   i = 7;
+float f = 3.5;
+void* vp;
+
+vp = &i;                    // tamam
+vp = &f;                    // bu da tamam
+
+printf("%d", *vp);          // HATA — void* dereference edilemez
+printf("%d", *(int*)vp);    // doğru — önce doğru türe cast
+```
+
+Kolay karışan bir şey: `void*` bir **null pointer değildir**. Null pointer
+"hiçbir yeri göstermiyor" demektir; void pointer ise bir yeri gösterir — sadece
+*orada ne tür olduğu* bilinmez.
+
+<Figure caption="Asimetri buranın özeti: içeri girerken serbest, dışarı çıkarken cast. Türü yalnızca uygulama programı bilir, ADT bilmez.">
+  <VoidPointerFigure lang="tr" />
+</Figure>
+
+Generic düğümün iki parçası var: **veri** ve **bağ**. Bağ, düğüm yapısının
+kendisine bir işaretçidir. Veri ise herhangi bir tür olabilsin diye `void*` ile
+tutulur — böylece tek bir `createNode` her türle çalışır.
+
+```c
+typedef struct node
+{
+    void*        dataPtr;   // veri: herhangi bir tür olabilir
+    struct node* link;      // bağ: kendi tipine işaretçi (self-referential)
+} NODE;
+
+/* Dinamik bellekte bir düğüm yaratır, veri işaretçisini içine koyar
+   ve düğümün adresini döndürür. */
+NODE* createNode (void* itemPtr)
+{
+    NODE* nodePtr;
+    nodePtr = (NODE*) malloc (sizeof (NODE));
+    nodePtr->dataPtr = itemPtr;
+    nodePtr->link    = NULL;
+    return nodePtr;
+}
+```
+
+### Pointer to function
+
+Fonksiyonlar da bellekte yer kaplar; **fonksiyonun adı, kodunun ilk baytını
+gösteren sabit bir işaretçidir.** Fonksiyona işaretçi tanımlarken işaretçiyi
+parantez içine almak zorunludur — `int (*f)(void*, void*)`. Parantezler olmazsa
+C, *dönüş tipini* işaretçi olarak yorumlar.
+
+Neden lazım? Generic `larger` fonksiyonu iki `void*` alır ama **onları
+karşılaştıramaz** — hangi türe cast edeceğini bilmez. Türü yalnızca uygulama
+programı bilir. Çözüm: karşılaştırmayı uygulamanın yazdığı bir `compare`
+fonksiyonuna devretmek ve o fonksiyonun *adresini* parametre olarak geçmek.
+
+```c
+/* Generic — iki void* değerden büyüğünü döndürür */
+void* larger (void* dataPtr1, void* dataPtr2,
+              int (*ptrToCmpFun)(void*, void*))
+{
+    if ((*ptrToCmpFun) (dataPtr1, dataPtr2) > 0)
+        return dataPtr1;
+    else
+        return dataPtr2;
+}
+
+/* Uygulamaya özel — int'leri bilen tek yer burası */
+int compare (void* ptr1, void* ptr2)
+{
+    if (*(int*)ptr1 >= *(int*)ptr2) return  1;
+    else                            return -1;
+}
+
+int main (void)
+{
+    int i = 7, j = 8, lrg;
+    lrg = *(int*) larger (&i, &j, compare);   // fonksiyon adı = adres
+    printf ("Larger value is: %d\n", lrg);    // Larger value is: 8
+}
+```
+
+<Figure caption="① main, iki adresi ve compare'ın adresini larger'a verir. ② larger karşılaştırmayı compare'a devreder. ③ compare bayrak döndürür. ④ larger büyük olanın adresini döndürür; main onu int*'a cast edip okur. Aynı larger, yeni bir compare yazarak float'larla da çalışır.">
+  <CallFlowFigure lang="tr" />
+</Figure>
+
+Bütün resim şu: `void*` ADT'nin *veriyi* tür bilmeden taşımasını, fonksiyon
+işaretçisi ise *işlemleri* tür bilmeden yapmasını sağlar. İkisi birlikte, tek bir
+liste/yığın/kuyruk kodunun her veri türüyle çalışmasını mümkün kılar — ADT'nin
+asıl vaadi bu.
+
+## Kendini yokla
+
+<Exercises>
+
+<Exercise n="1" question="4562 tamsayısı atomik mi bileşik mi? Peki bir telefon numarası?">
+
+4562 **atomiktir**: basamaklarına ayrılabilir ama parçalar orijinalle aynı şey
+değildir — 4, 5, 6, 2 ile 4562 farklı şeylerdir.
+
+Telefon numarası **bileşiktir**: ülke kodu, şehir kodu ve numara olarak ayrılır
+ve her alt alan kendi başına anlamlıdır.
+
+</Exercise>
+
+<Exercise n="2" question="Uygulama programının ADT'nin veri yapısına doğrudan erişmesine izin verilse ne olurdu?">
+
+ADT'nin iç yapısı değiştirilemez hâle gelirdi.
+
+Diziden bağlı listeye geçtiğin gün, o veri yapısına dokunan her uygulamayı da
+baştan yazman gerekir. Kapsüllemenin varlık sebebi tam olarak bu: arayüz sabit
+kaldığı sürece iç yapı serbestçe değişebilir.
+
+</Exercise>
+
+<Exercise n="3" question="a = 100 ve p = &a iken p, *p ve &p sırasıyla neyi verir?">
+
+`p` → **1024**, a'nın adresi. `*p` → **100**, o adresteki değer. `&p` → **1032**,
+p'nin kendisinin durduğu adres.
+
+Üçü üç farklı sayıdır. Yukarıdaki izleyicide bunu adım adım görebilirsin.
+
+</Exercise>
+
+<Exercise n="4" question="void* neden bir null pointer değildir?">
+
+Null pointer "hiçbir yeri göstermiyorum" demektir. Void pointer bir yeri
+gösterir — bilinmeyen şey adresin *neyi* gösterdiği, yani orada hangi türden bir
+değer durduğudur.
+
+Bu yüzden `void*` atanırken cast gerekmez ama okunurken şarttır: adresi türünü
+bilmeden saklayabilirsin, tersi geçerli değil.
+
+</Exercise>
+
+<Exercise n="5" question="int (*f)(void*, void*) bildiriminde parantezler kaldırılırsa ne olur?">
+
+`int *f(void*, void*)` olur ve anlamı tamamen değişir: bu artık *işaretçiye
+işaretçi* değil, **`int*` döndüren bir fonksiyondur**.
+
+Parantez, `*`'ı dönüş tipinden ayırıp `f`'e bağlar. Fonksiyon işaretçisi
+bildirirken zorunlu olmasının sebebi bu.
+
+</Exercise>
+
+</Exercises>

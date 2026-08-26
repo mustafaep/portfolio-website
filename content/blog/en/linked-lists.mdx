@@ -1,0 +1,322 @@
+---
+title: Linked Lists
+summary: 'Implementing a linear list with pointers: inserting, deleting, searching and traversing nodes, then the circular, doubly and multi-linked variants.'
+date: '2026-08-26'
+series: Data Structures
+seriesOrder: 3
+tags:
+  - linked list
+  - c
+  - data structures
+---
+
+This post is a **study file** for the linked list topic of BLM212 Data
+Structures. It was compiled and edited with AI from the course notes. The six
+scenarios in the insert-and-delete section can be stepped through — the real
+lesson of that section is an *ordering* rule, and ordering is what a finished
+diagram cannot show.
+
+## The linear list
+
+A linear list is a list in which **every element has exactly one successor**.
+Four basic operations are defined on it: **insertion**, which fits a value in
+between; **deletion**, which takes one out; **retrieval**, which reads the data
+without removing it; and **traversal**, which visits every node from start to end
+exactly once.
+
+These four are the core of every linear list ADT. Stacks and queues are linear
+lists too — what is restricted in them is *where* the operations may happen, and
+restricted lists have no traversal.
+
+The whole topic rests on one tension: when ordered data needs insertion and
+deletion, **arrays are inefficient**, because everything has to shift. A linked
+list solves that, but in exchange **search and access become inefficient**,
+because there is no longer any random access.
+
+## Array or linked list?
+
+<ArrayVsListTable lang="en" />
+
+If your application only **appends to the end** and **accesses the i-th
+element**, an array is the right fit; both are constant time. If insertions and
+deletions happen **anywhere in the list**, especially at the front, an array is
+not a good choice — nor is it when the size is not known in advance.
+
+Here is the price: the nodes of a linked list are not physically contiguous, so
+binary search is impossible and only **sequential search** is available.
+`findKth` now means walking the list.
+
+## Two structures
+
+Technically a single pointer is enough to define a list. In practice a **head
+structure** is far more useful: other information about the list is kept
+alongside the head pointer.
+
+<Figure caption="Nodes are self-referential structures: each instance contains a pointer to another instance of the same structural type. The pos field records where a traversal left off.">
+  <HeadNodeFigure lang="en" />
+</Figure>
+
+```text
+Algorithm createList
+   Allocates dynamic memory for the list head and returns its address.
+1 if (memory available)
+   1  allocate (pNew)
+   2  pNew->head  = null pointer
+   3  pNew->count = 0
+2 else
+   1  pNew = null pointer
+3 return pNew
+end createList
+```
+
+An empty list means **the head structure exists but `head` is null**. The list is
+not absent — it is just empty.
+
+## Insertion and deletion
+
+Insertion is three steps: **① make room for the new node and put the data in it,
+② find the node that precedes it (pPre), ③ make that node point at the new one.**
+The critical part is the order: the new node's link first, the predecessor's
+second. The other way round loses the tail of the list.
+
+<LinkedListLab lang="en" />
+
+Insertion splits into two branches with a single `if`. **If pPre is null** —
+inserting into an empty list or at the head — the new node's link is set to
+`head` and `head` is turned to the new node. **If pPre is not null** — inserting
+in the middle or at the end — the new node's link is set to `pPre->link` and
+`pPre->link` is turned to the new node. All four cases are covered by those two
+branches; there is no separate code for appending.
+
+Deletion uses the same two branches. **If pPre is null** (deleting the first
+node) `head = pLoc->link`; otherwise `pPre->link = pLoc->link`. Both branches
+then decrement the count and release `pLoc`'s memory.
+
+The most common mistake is writing `pPre->link = pNew` first. At that moment the
+old value of `pPre->link` — the rest of the list — is lost and cannot be
+recovered. The rule never changes: **the new node's link first.** Step through
+"insert in the middle" above and you will see the frame where the tail is held
+from two places at once; that frame is exactly why the order matters.
+
+## Search
+
+Insertion needs **the preceding node**, deletion needs **the node to delete and
+its predecessor**, and access needs **the node itself**. A single search function
+supplies all three — which is why it returns two pointers.
+
+Because there is no physical relationship between the nodes, sequential search is
+mandatory. What differs from a classic sequential search is that the list is
+sorted, so when the target is not found the search still returns **where it
+should have been**.
+
+<Figure caption="The trick is that pPre and pLoc point at the right place even when the search fails — so if you had wanted to insert 17, this is exactly the insertion point. That is why the same function serves both search and insertion.">
+  <SearchFigure lang="en" />
+</Figure>
+
+```text
+Algorithm searchList (pList, pPre, pLoc, target)
+1 pPre = null
+2 pLoc = pList->head
+3 loop (pLoc not null AND target > pLoc->data.key)
+   1  pPre = pLoc
+   2  pLoc = pLoc->link
+4 if (pLoc is null)  found = false
+5 else
+   1  if (target equal pLoc->data.key)  found = true
+   2  else                              found = false
+6 return found
+```
+
+The two conditions in the loop do two separate jobs: the first stops it running
+off the end of the list, the second stops it when the target is found or when a
+node larger than the target is reached — that is, when the target is not in the
+list.
+
+<SearchOutcomesTable lang="en" />
+
+## Traversal and destruction
+
+The core of a traversal is four lines. The hard part is that in an ADT **each
+call has to return the next element**, which is why the head structure carries a
+`pos` field.
+
+```c
+pWalker = pList->head
+loop (pWalker not null)
+    process (pWalker->data)
+    pWalker = pWalker->link
+```
+
+Inside the ADT the same job takes a little more, because it has to remember where
+it left off:
+
+```c
+if (fromWhere is 0)   // start from the beginning
+   pList->pos = pList->head
+else                  // carry on from where you were
+   if (pList->pos->link is null)
+        return false   // the list is finished
+   pList->pos = pList->pos->link
+```
+
+The application programmer has no access to the list structure, so the ADT itself
+must remember the position.
+
+Destroying a list is three jobs: **① delete the nodes and give their memory back,
+② give the head structure's memory back, ③ return a null pointer showing that the
+list no longer exists.**
+
+```text
+algorithm destroyList (ref pList)
+1 loop (pList->count not zero)
+   1  dltPtr       = pList->head
+   2  pList->head  = dltPtr->link      // rescue the chain first
+   3  pList->count = pList->count - 1
+   4  release (dltPtr)                 // then delete
+2 release (pList)
+3 return null pointer
+```
+
+The same ordering rule again: copy the node's link *before* releasing it. Release
+first, and the place you were about to read the rest of the list's address from
+is no longer yours.
+
+## The List ADT
+
+Turning a linked list implementation into an ADT raises two problems: the ADT
+**does not know the type of the data**, yet it **has to keep the list in key
+order.** Sorting means comparing, and comparing means knowing the type.
+
+The application program holds the data: it allocates the memory and passes the
+node's *address* to the ADT. Because C is strongly typed the data pointer is
+passed as a `void*`. The solution to the ordering problem is for the application
+to write a `compare` function and for the ADT to store its *address* in the head
+structure as metadata. The contract is simple: `arg < key → −1`, `arg = key → 0`,
+`arg > key → +1`. Since the programmer cannot reach the structure, status
+functions like `emptyList`, `fullList` and `listCount` are needed too.
+
+<Figure caption="The real work happens in the internal functions; the public ones are only the interface. compare's address sits in the head structure as metadata — the ADT does not do the comparing, it has it done.">
+  <ListAdtFigure lang="en" />
+</Figure>
+
+The two tools here are exactly the two from the ADT post: `void*` carries the
+data without knowing its type, and the pointer to a function has the operation
+performed without knowing the type. The List ADT is their first real application.
+
+## Kinds of list
+
+A singly linked list has two shortcomings: **it cannot go backwards** and **it
+cannot get from the end to the front.** Three useful variants close those gaps.
+
+### Circular linked list
+
+The link in the last node points at the first node (or at a header node).
+Insertion and deletion are **identical** to the singly linked case — the only
+difference is the last node's link. The real question is search: when does the
+loop stop?
+
+<Figure caption="A circular list has no null, and therefore no 'end of list' test. The fix: keep the starting node's address and stop when you come back to it.">
+  <CircularListFigure lang="en" />
+</Figure>
+
+### Doubly linked list
+
+Two pointers in every node: **back**, pointing at its predecessor, and **fore**,
+pointing at its successor. The price is that **four links** have to be updated on
+every insertion and deletion.
+
+<Figure caption="Order matters again: the new node's two links first (① ②), then the neighbours' links (③ ④). When inserting after the last node pPre->fore is null, and then the list's rear pointer is updated too.">
+  <DoublyLinkedFigure lang="en" />
+</Figure>
+
+Deletion needs two independent checks, because the node being deleted may be at
+the front or at the end:
+
+```c
+if (pDlt->back <> null)   // not the first node
+     pDlt->back->fore = pDlt->fore
+else pList->head       = pDlt->fore
+
+if (pDlt->fore <> null)   // not the last node
+     pDlt->fore->back = pDlt->back
+else pList->rear       = pDlt->back
+```
+
+### Two more kinds
+
+In a **multilinked list** the same set of nodes is connected by two or more
+separate link chains, one per logical ordering. The data is *not* duplicated;
+only extra links are added. The course example is a list of US presidents:
+alongside the chronological order, two more chains by the president's name and by
+their spouse's name.
+
+In an **array of linked lists** each element of the array is the head of a linked
+list: each list represents a row and the nodes in it represent the columns. The
+number of rows is fixed and the row lengths vary.
+
+The two variants also combine: a **doubly linked circular list** can be walked in
+both directions and has its ends joined, so moving between the first and last
+node is a single step.
+
+## Check yourself
+
+<Exercises>
+
+<Exercise n="1" question="Why is inserting at the head of a linked list O(1) while inserting at the front of an array is O(N)?">
+
+In an array every existing element has to **shift one place right**; with N
+elements that is N moves.
+
+In a linked list physical position does not matter at all. Only two links change:
+the new node's link is turned to the old first node and `head` is turned to the
+new node. A fixed amount of work, independent of the element count.
+
+</Exercise>
+
+<Exercise n="2" question="What happens if you write pPre->link = pNew before pNew->link = pPre->link?">
+
+**The rest of the list is lost and cannot be recovered.**
+
+At that moment `pPre->link` is the only place holding the address of the list's
+tail. The instant you write `pNew` over it, that address is recorded nowhere, and
+the value you were going to read for `pNew->link` no longer exists. This is why
+the rule never changes: **the new node's link first.**
+
+</Exercise>
+
+<Exercise n="3" question="When searchList fails to find its target, where do pPre and pLoc point, and why is that useful?">
+
+`pLoc` points at **the first node that is not smaller than the target**, and
+`pPre` at its predecessor.
+
+That is exactly where the target *should have been*. So a failed search is not
+wasted: the two pointers it returns are the insertion point you would use to add
+that same value. It is why one function serves both search and insertion.
+
+</Exercise>
+
+<Exercise n="4" question="Why can't the search loop in a circular linked list end on a pLoc null test?">
+
+Because a circular list **has no null**. The last node's link points at the first
+node, so there is no marker saying "the list is finished" and the loop runs
+forever.
+
+The fix is to keep the starting address:
+`loop (target <> pLoc->data.key AND pLoc->link <> startAddress)`.
+
+</Exercise>
+
+<Exercise n="5" question="Why does deleting a node from a doubly linked list need two separate ifs?">
+
+The node being deleted may be the **first** node and the **last** node at the
+same time, or either one — four possibilities, and two of them are independent of
+each other.
+
+If `pDlt->back` is null the node is the first and `head` must be updated;
+otherwise its predecessor's `fore` must be. If `pDlt->fore` is null it is the
+last and `rear` must be updated; otherwise its successor's `back` must be. Two
+independent questions, two independent `if`s.
+
+</Exercise>
+
+</Exercises>

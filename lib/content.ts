@@ -43,6 +43,13 @@ export type BlogFrontmatter = {
    * "Data Structures" in English. Posts without one are listed on their own.
    */
   series?: string;
+  /**
+   * Reading order inside the series, lowest first. Course notes are written in
+   * whatever order they are revised but read in the order they were taught, and
+   * the index's newest-first date sort gets that backwards. Posts without one
+   * fall to the end of their series and keep the date order among themselves.
+   */
+  seriesOrder?: number;
   draft?: boolean;
 };
 
@@ -147,6 +154,7 @@ export function getPost(slug: string, locale: Locale): BlogDoc | null {
       typeof data.series === 'string' && data.series.trim() !== ''
         ? data.series
         : undefined,
+    seriesOrder: typeof data.seriesOrder === 'number' ? data.seriesOrder : undefined,
     draft: data.draft === true,
     body: content,
   };
@@ -197,6 +205,12 @@ export function getPostsBySeries(locale: Locale): PostSeries[] {
     const group = groups.find((g) => g.name === post.series);
     if (group) group.posts.push(post);
     else groups.push({ name: post.series, posts: [post] });
+  }
+
+  for (const group of groups) {
+    group.posts.sort(
+      (a, b) => (a.seriesOrder ?? Infinity) - (b.seriesOrder ?? Infinity),
+    );
   }
 
   if (loose.length > 0) groups.push({ name: null, posts: loose });

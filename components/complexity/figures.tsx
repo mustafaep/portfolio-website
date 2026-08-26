@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react';
-
 import { type Lang, rampColor } from './shared';
 
 /**
@@ -7,17 +5,6 @@ import { type Lang, rampColor } from './shared';
  * they are diagrams of a mechanism — so they use the ordinal ramp only where it
  * carries the cost reading, and ink tokens everywhere text appears.
  */
-
-export function Figure({ caption, children }: { caption: string; children: ReactNode }) {
-  return (
-    <figure className="not-prose my-10">
-      <div className="border border-line px-4 py-5 sm:px-5">{children}</div>
-      <figcaption className="mt-3 font-mono text-xs leading-relaxed text-muted">
-        {caption}
-      </figcaption>
-    </figure>
-  );
-}
 
 const HALF_SQUARE_COPY = {
   tr: {

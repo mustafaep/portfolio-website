@@ -1,0 +1,308 @@
+---
+title: Bağlı Listeler
+summary: 'Doğrusal listenin işaretçilerle gerçekleştirilmesi: düğüm ekleme, silme, arama ve gezinme, sonra dairesel, çift bağlı ve çok bağlı çeşitleri.'
+date: '2026-08-26'
+series: Veri Yapıları
+seriesOrder: 3
+tags:
+  - bağlı liste
+  - c
+  - veri yapıları
+---
+
+Bu yazı BLM212 Veri Yapıları dersinin bağlı listeler konusu için hazırlanmış bir
+**çalışma dosyası**. Ders notlarından yola çıkılarak yapay zekâ ile derlendi ve
+düzenlendi. Ekleme ve silme bölümündeki altı senaryo adım adım ilerletilebilir —
+o bölümün asıl dersi bir *sıra* kuralı ve sıra, bitmiş bir şemada görünmüyor.
+
+## Doğrusal liste
+
+Doğrusal liste, **her elemanın tek bir halefi olduğu** bir listedir. Üzerinde
+tanımlı dört temel işlem var: araya sığdıran **insertion**, çıkaran
+**deletion**, veriyi listeden çıkarmadan okuyan **retrieval** ve baştan sona her
+düğüme tam bir kez uğrayan **traversal**.
+
+Bu dört işlem her doğrusal liste ADT'sinin çekirdeğidir. Yığın ve kuyruk da
+doğrusal listedir — onlarda kısıtlanan şey işlemlerin *nerede* yapılabileceğidir,
+ve kısıtlı listelerde gezinme yoktur.
+
+Bütün konu tek bir gerilimin üstüne kurulu: sıralı verilerde ekleme ve silme
+gerektiğinde **diziler verimsizdir**, çünkü her şeyi kaydırmak gerekir. Bağlı
+liste bunu çözer, ama karşılığında **arama ve erişim verimsizleşir**, çünkü artık
+rastgele erişim yoktur.
+
+## Dizi mi, bağlı liste mi?
+
+<ArrayVsListTable lang="tr" />
+
+Uygulaman yalnızca listenin **sonuna ekleme** ve **i. elemana erişim** yapıyorsa
+dizi uygundur; ikisi de sabit zamanlıdır. Ekleme ve silmeler listenin **her
+noktasında**, özellikle de başında oluyorsa dizi iyi bir seçim değildir — boyut
+önceden bilinmiyorsa da öyle.
+
+Bedeli şu: bağlı listede düğümler fiziksel olarak ardışık değildir, bu yüzden
+ikili arama yapılamaz, yalnızca **sıralı arama** mümkündür. `findKth` artık
+listeyi gezmeyi gerektirir.
+
+## İki yapı
+
+Listeyi tanımlamak için teknik olarak tek bir işaretçi yeterlidir. Ama pratikte
+**baş yapısı (head structure)** kurmak çok daha kullanışlıdır: baş işaretçinin
+yanına listeyle ilgili başka bilgiler de konur.
+
+<Figure caption="Düğümler self-referential yapılardır: yapının her örneği, aynı yapısal türden başka bir örneğe işaretçi içerir. pos alanı gezinme sırasında nerede kalındığını tutar.">
+  <HeadNodeFigure lang="tr" />
+</Figure>
+
+```text
+Algorithm createList
+   Bağlı liste baş düğümü için dinamik bellek ayırır ve adresini döndürür.
+1 if (memory available)
+   1  allocate (pNew)
+   2  pNew->head  = null pointer
+   3  pNew->count = 0
+2 else
+   1  pNew = null pointer
+3 return pNew
+end createList
+```
+
+Boş liste demek, **baş yapısı var ama `head` null** demektir. Liste "yok"
+değildir — sadece içi boştur.
+
+## Ekleme ve silme
+
+Ekleme üç adımdır: **① yeni düğüme yer aç ve veriyi koy, ② yeni düğümden önce
+gelen düğümü (pPre) bul, ③ o düğümün yeni düğümü göstermesini sağla.** Kritik
+nokta sıra: önce yeni düğümün bağı, sonra öncekinin bağı. Tersi olursa listenin
+kuyruğu kaybolur.
+
+<LinkedListLab lang="tr" />
+
+Ekleme tek bir `if` ile iki dala ayrılır. **pPre null ise** (boş listeye ya da
+başa ekleme) yeni düğümün bağı `head`'e, `head` ise yeni düğüme çevrilir. **pPre
+null değilse** (ortaya ya da sona ekleme) yeni düğümün bağı `pPre->link`'e,
+`pPre->link` ise yeni düğüme çevrilir. Dört durumun tamamı bu iki dalla
+karşılanır; sona ekleme için ayrı bir kod yoktur.
+
+Silme aynı iki dalı kullanır. **pPre null ise** (ilk düğümü silme)
+`head = pLoc->link`; değilse `pPre->link = pLoc->link`. Her iki dalda da sonunda
+sayaç azaltılır ve `pLoc`'un belleği geri verilir.
+
+En sık yapılan hata, ekleme sırasında önce `pPre->link = pNew` yazmaktır. O anda
+`pPre->link`'in eski değeri — yani listenin geri kalanı — kaybolur ve geri
+getirilemez. Sıra daima **önce yeni düğümün bağı**. Yukarıdaki senaryolarda
+"ortaya ekle" adımlarını izlersen, kuyruğun bir adım boyunca iki yerden birden
+tutulduğu anı görürsün; sıranın sebebi tam olarak o an.
+
+## Arama
+
+Ekleme için **önceki düğümü**, silme için **silinecek düğümü ve öncekini**,
+erişim için **düğümün kendisini** bilmek gerekir. Üçünü de tek bir arama
+fonksiyonu sağlar — bu yüzden geriye iki işaretçi döndürür.
+
+Düğümler arasında fiziksel bir ilişki olmadığı için sıralı arama zorunludur.
+Klasik sıralı aramadan farkı şu: liste sıralı olduğu için, aranan bulunamadığında
+da **olması gereken yer** döndürülür.
+
+<Figure caption="İşin püf noktası: arama başarısız olsa bile pPre ve pLoc doğru yeri gösterir — yani 17'yi eklemek isteseydin, ekleme noktası tam olarak burasıdır. Bu yüzden aynı fonksiyon hem aramaya hem eklemeye hizmet eder.">
+  <SearchFigure lang="tr" />
+</Figure>
+
+```text
+Algorithm searchList (pList, pPre, pLoc, target)
+1 pPre = null
+2 pLoc = pList->head
+3 loop (pLoc not null AND target > pLoc->data.key)
+   1  pPre = pLoc
+   2  pLoc = pLoc->link
+4 if (pLoc is null)  found = false
+5 else
+   1  if (target equal pLoc->data.key)  found = true
+   2  else                              found = false
+6 return found
+```
+
+Döngüdeki iki koşul iki ayrı işi yapar: birincisi listenin sonundan taşmayı
+engeller, ikincisi hedef bulunduğunda ya da hedeften büyük bir düğüme
+gelindiğinde — yani hedef listede yoksa — döngüyü durdurur.
+
+<SearchOutcomesTable lang="tr" />
+
+## Gezinme ve yok etme
+
+Gezinmenin çekirdeği dört satırdır. Zor kısım, ADT'de **her çağrının bir sonraki
+elemanı döndürmesi** gerektiğidir; bu yüzden baş yapısında `pos` alanı tutulur.
+
+```c
+pWalker = pList->head
+loop (pWalker not null)
+    process (pWalker->data)
+    pWalker = pWalker->link
+```
+
+ADT içinde aynı iş, kaldığı yeri hatırlamak zorunda olduğu için biraz daha uzar:
+
+```c
+if (fromWhere is 0)   // baştan başla
+   pList->pos = pList->head
+else                  // kaldığın yerden
+   if (pList->pos->link is null)
+        return false   // liste bitti
+   pList->pos = pList->pos->link
+```
+
+Uygulama programcısının liste yapısına erişimi olmadığı için, nerede kalındığını
+ADT'nin kendisi hatırlamalıdır.
+
+Listeyi yok etmek üç iştir: **① listedeki düğümleri silip belleklerini geri ver,
+② baş yapısının belleğini geri ver, ③ listenin artık var olmadığını gösteren null
+işaretçiyi döndür.**
+
+```text
+algorithm destroyList (ref pList)
+1 loop (pList->count not zero)
+   1  dltPtr       = pList->head
+   2  pList->head  = dltPtr->link      // önce zinciri kurtar
+   3  pList->count = pList->count - 1
+   4  release (dltPtr)                 // sonra sil
+2 release (pList)
+3 return null pointer
+```
+
+Yine aynı sıra kuralı: düğümü serbest bırakmadan *önce* bağını kopyala. Önce
+`release` yaparsan, listenin geri kalanının adresini okuyacağın yer artık senin
+değildir.
+
+## List ADT
+
+Bağlı liste gerçekleştirmesini bir ADT'ye çevirmek iki problem doğurur: ADT
+**verinin türünü bilmez**, ama listeyi **anahtar sırasında tutmak zorundadır.**
+Sıralamak için karşılaştırmak, karşılaştırmak için türü bilmek gerekir.
+
+Veriyi uygulama programı tutar: belleği o ayırır ve düğümün *adresini* ADT'ye
+geçirir. C strongly typed olduğu için veri işaretçisi `void*` olarak geçer.
+Sıralama sorununun çözümü ise uygulamanın bir `compare` fonksiyonu yazması ve
+ADT'nin onun *adresini* baş yapısında metadata olarak saklamasıdır. Sözleşme
+basit: `arg < key → −1`, `arg = key → 0`, `arg > key → +1`. Programcı yapıya
+erişemediği için `emptyList`, `fullList` ve `listCount` gibi durum fonksiyonları
+da gerekir.
+
+<Figure caption="Gerçek iş dahili fonksiyonlarda döner; public fonksiyonlar yalnızca arayüzdür. compare'ın adresi baş yapısında metadata olarak durur — ADT karşılaştırmayı yapmaz, yaptırır.">
+  <ListAdtFigure lang="tr" />
+</Figure>
+
+Buradaki iki araç, ADT dersinde görülen ikisinin ta kendisi: `void*` veriyi tür
+bilmeden taşır, fonksiyon işaretçisi işlemi tür bilmeden yaptırır. Liste ADT'si
+bunların ilk gerçek uygulaması.
+
+## Liste çeşitleri
+
+Tek yönlü listenin iki eksiği var: **geriye gidilemez** ve **sondan başa
+dönülemez.** Üç kullanışlı çeşit bu eksikleri kapatır.
+
+### Dairesel bağlı liste
+
+Son düğümdeki bağ ilk düğümü (ya da başlık düğümünü) gösterir. Ekleme ve silme
+tek bağlı listeyle **aynıdır** — tek fark son düğümün bağı. Asıl mesele arama:
+döngü ne zaman duracak?
+
+<Figure caption="Dairesel listede null yoktur, dolayısıyla 'liste bitti' testi de yoktur. Çözüm: başlangıç düğümünün adresini sakla, ona geri dönünce dur.">
+  <CircularListFigure lang="tr" />
+</Figure>
+
+### Çift bağlı liste
+
+Her düğümde iki işaretçi: selefini gösteren **back** ve halefini gösteren
+**fore**. Bedeli, her ekleme ve silmede **dört bağın** güncellenmesidir.
+
+<Figure caption="Sıra yine önemli: önce yeni düğümün iki bağı (① ②), sonra komşuların bağları (③ ④). Sondaki düğüme eklenirken pPre->fore null olur; o zaman listenin rear işaretçisi de güncellenir.">
+  <DoublyLinkedFigure lang="tr" />
+</Figure>
+
+Silmede iki bağımsız kontrol gerekir, çünkü silinen düğüm başta ya da sonda
+olabilir:
+
+```c
+if (pDlt->back <> null)   // ilk düğüm değil
+     pDlt->back->fore = pDlt->fore
+else pList->head       = pDlt->fore
+
+if (pDlt->fore <> null)   // son düğüm değil
+     pDlt->fore->back = pDlt->back
+else pList->rear       = pDlt->back
+```
+
+### Diğer iki çeşit
+
+**Çok bağlı listede** aynı düğüm kümesi iki veya daha fazla mantıksal sıraya göre
+ayrı bağ zincirleriyle bağlanır. Veriler *çoğaltılmaz*, yalnızca ek bağlar
+eklenir. Ders örneği ABD başkanları listesi: kronolojik sıranın yanına başkanın
+adına ve eşinin adına göre iki zincir daha.
+
+**Bağlı liste dizisinde** ise dizinin her elemanı bir bağlı listenin başıdır: her
+bağlı liste bir satırı, listedeki düğümler sütunları temsil eder. Satır sayısı
+sabit, satır uzunlukları değişkendir.
+
+İkisinin birleşimi de mümkün: **çift bağlı dairesel liste** hem iki yönde gezilir
+hem de uçları birbirine bağlıdır, baş ile son düğüm arasındaki geçiş tek adımdır.
+
+## Kendini yokla
+
+<Exercises>
+
+<Exercise n="1" question="Bir bağlı listenin başına ekleme neden O(1), diziye başa ekleme neden O(N)?">
+
+Dizide başa ekleme için mevcut **her eleman bir sağa kaymalıdır**; N eleman varsa
+N kaydırma yapılır.
+
+Bağlı listede fiziksel konum hiç önemli değildir. Yalnızca iki bağ değişir: yeni
+düğümün bağı eski ilk düğüme, `head` ise yeni düğüme çevrilir. Eleman sayısından
+bağımsız, sabit sayıda iş.
+
+</Exercise>
+
+<Exercise n="2" question="Eklemede pPre->link = pNew satırını pNew->link = pPre->link satırından önce yazarsanız ne olur?">
+
+Listenin **geri kalanı kaybolur ve geri getirilemez**.
+
+`pPre->link` o an listenin kuyruğunun adresini tutan tek yerdir. Üzerine `pNew`
+yazdığın anda o adres hiçbir yerde kayıtlı değildir; `pNew->link` için okuyacağın
+değer de artık yoktur. Kural bu yüzden değişmez: **önce yeni düğümün bağı.**
+
+</Exercise>
+
+<Exercise n="3" question="searchList aradığını bulamadığında pPre ve pLoc nereyi gösterir, bu neden işe yarar?">
+
+`pLoc` **hedeften küçük olmayan ilk düğümü**, `pPre` de onun selefini gösterir.
+
+Bu tam olarak hedefin listede *olması gereken* yerdir. Yani başarısız bir arama
+boşa gitmez: dönen iki işaretçi, aynı değeri eklemek isteseydin kullanacağın
+ekleme noktasıdır. Aynı fonksiyonun hem aramaya hem eklemeye hizmet etmesinin
+sebebi bu.
+
+</Exercise>
+
+<Exercise n="4" question="Dairesel bağlı listede arama döngüsü neden pLoc null testiyle bitirilemez?">
+
+Çünkü dairesel listede **null yoktur**. Son düğümün bağı ilk düğümü gösterir, o
+yüzden "liste bitti" diyecek bir işaret bulunmaz; döngü sonsuza kadar döner.
+
+Çözüm başlangıç adresini saklamaktır:
+`loop (target <> pLoc->data.key AND pLoc->link <> startAddress)`.
+
+</Exercise>
+
+<Exercise n="5" question="Çift bağlı listede bir düğüm silinirken neden iki ayrı if gerekir?">
+
+Silinen düğüm aynı anda hem **ilk** hem **son** düğüm olabilir, ya da ikisinden
+biri olabilir — dört ihtimal var ve ikisi birbirinden bağımsız.
+
+`pDlt->back` null ise silinen düğüm ilk düğümdür ve `head` güncellenmelidir;
+değilse selefinin `fore`'u. `pDlt->fore` null ise son düğümdür ve `rear`
+güncellenmelidir; değilse halefinin `back`'i. İki bağımsız soru, iki bağımsız
+`if`.
+
+</Exercise>
+
+</Exercises>

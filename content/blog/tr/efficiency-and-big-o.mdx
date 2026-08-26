@@ -12,6 +12,8 @@ tags:
 Bu yazı BLM212 Veri Yapıları dersinin verimlilik konusu için hazırlanmış bir
 **çalışma dosyası**. Ders notlarından yola çıkılarak yapay zekâ ile derlendi ve
 düzenlendi; amacı konuyu tek bir yerden tekrar edilebilir hâle getirmek.
+Grafikler ve tablolar üzerinde oynanabilir — sayıları kendin değiştirdiğinde
+aradaki uçurum okumaktan daha net görünüyor.
 
 ## Bir algoritmayı neden ölçeriz?
 
@@ -55,18 +57,13 @@ teorik analiz üzerinden yürür.
 Küçük `n`'de her algoritma hızlıdır. Fark `n` büyüdükçe ortaya çıkar — ve fark
 "biraz daha yavaş" değil, mikrosaniye ile evrenin yaşı arasındaki kadardır.
 
-```text
-T(n)          n = 10      100        1.000      10.000     büyüklük
-------------  ----------  ---------  ---------  ---------  ---------
-5 (sabit)     5           5          5          5          atom
-log n         3           6          9          13         amip
-√n            3           10         31         100        kuş
-n             10          100        1.000      10.000     insan
-n log n       30          600        9.000      130.000    ev
-n²            100         10.000     10⁶        10⁸        fil
-n³            1.000       10⁶        10⁹        10¹²       dinozor
-2ⁿ            1.024       10³⁰       10³⁰⁰      10³⁰⁰⁰     evren
-```
+<Figure caption="Renk açıktan koyuya doğru artan maliyeti gösterir. Eğriler 100 adımda kırpıldı: n³ n = 8'de, 2ⁿ n = 7'de tavanı görüyor. Eğrilerin üzerinde gezinerek her sınıfın o n değerindeki tam adım sayısını okuyabilirsin.">
+  <GrowthChart lang="tr" />
+</Figure>
+
+Aynı veriler sayı olarak:
+
+<GrowthNumbersTable lang="tr" />
 
 İki uç, meseleyi tek başına anlatıyor. `n = 60` için `2ⁿ ≈ 10¹⁸` adımdır —
 saniyede bir adım atılsa **evrenin yaşı kadar** sürer. Tersten bakınca: girdi
@@ -77,6 +74,18 @@ Bir ayrıntı daha: log-log grafikte **tüm polinomlar doğru görünür** — `
 `n³`, `n⁴` hepsi düz çizgidir, yalnızca eğimleri farklıdır. Üstel olan ise
 log-log'da bile hâlâ üsteldir. Bu yüzden `n^c` ailesi makul (*feasible*), `c^n`
 ailesi makul değil (*infeasible*) sayılır.
+
+### Kendin dene
+
+`n`'i değiştir ve her sınıfın kaç adım gerektirdiğini, adım başına 1 nanosaniye
+varsayımıyla bunun ne kadar süreceğini gör. Asıl mesele aradaki uçurumun `n`'le
+birlikte nasıl açıldığı.
+
+<GrowthCalculator lang="tr" />
+
+Çubuklar logaritmik ölçekte: uzunluk adım sayısının *basamak sayısıyla*
+orantılı ve 10²⁰ adımda doyuyor. Doğrusal çizilseydi `2ⁿ` ve `n!` dışındaki her
+satır görünmez olurdu — aradaki fark o kadar büyük.
 
 ## Döngüleri saymak
 
@@ -135,8 +144,11 @@ for (i = 0; i < 10; i++)
 
 Bağımlı karesel döngüde iç döngü sırasıyla 0, 1, 2, … 9 kez çalışır: toplam 45
 tur, ortalama `45/10 = 4,5 ≈ (n+1)/2`. Dış tur sayısıyla çarpılınca `n(n+1)/2`
-çıkar. Yani tam karenin yaklaşık **yarısı** taranır — ve yarısı da, tamamı da
-`O(n²)`'dir. Big-O şekli sorar, oranı değil.
+çıkar.
+
+<Figure caption="Bağımlı karesel döngü tam karenin yaklaşık yarısını tarar. Yarısı da, tamamı da O(n²)'dir — Big-O şekli sorar, oranı değil.">
+  <HalfSquareFigure lang="tr" />
+</Figure>
 
 ## Big-O'yu türetmek
 
@@ -148,12 +160,9 @@ belirler. İşte o terim Big-O'dur: `O(n)` — *on the order of*.
    derleyiciye bağlıdır; `n` büyürken belirleyici olan onlar değildir.
 2. **En büyük terim dışındakileri at.** `n² + n → n²`.
 
-Sıralama küçükten büyüğe: `log n`, `n`, `n log n`, `n²`, `n³`, …, `n^k`, …,
-`2ⁿ`, …, `n!`
-
-İki kural, tek örnek: `f(n) = ½n² + ½n → O(n²)`. Bir örnek daha:
-`3n³ + 100n² + 5000 → n³ + n² + 1 → O(n³)` — 100 katsayısı ne kadar büyük
-olursa olsun `n³`'ü yenemez.
+<Figure caption="İki kural, tek örnek: f(n) = ½n² + ½n → O(n²). Bir örnek daha: 3n³ + 100n² + 5000 → n³ + n² + 1 → O(n³) — 100 katsayısı ne kadar büyük olursa olsun n³'ü yenemez.">
+  <BigOLadder lang="tr" />
+</Figure>
 
 > Big-O bir **büyüklük mertebesidir**, süre değil. `O(n²)` bir algoritma küçük
 > `n`'de `O(n log n)` olandan hızlı olabilir; atılan sabitler orada hâlâ
@@ -161,20 +170,9 @@ olursa olsun `n³`'ü yenemez.
 
 ## Yedi verimlilik kategorisi
 
-Ders kitabının standart ölçüsü `n = 10.000` üzerinden verilir. Tablo yukarıdan
-aşağı **azalan verimlilik** sırasındadır.
+Ders kitabının standart ölçüsü `n = 10.000` üzerinden verilir.
 
-```text
-verimlilik            big-O        tur sayısı    tahmini süre
---------------------  -----------  ------------  -------------
-Logarithmic           O(log n)     14            mikrosaniye
-Linear                O(n)         10.000        saniye
-Linear logarithmic    O(n log n)   140.000       saniye
-Quadratic             O(n²)        10.000²       dakika
-Polynomial            O(n^k)       10.000^k      saat
-Exponential           O(c^n)       2^10.000      çözülemez
-Factorial             O(n!)        10.000!       çözülemez
-```
+<CategoryTable lang="tr" />
 
 Pratikte sınır **polinom ile üstel arasındadır**: `n^c` ailesi makul sayılır,
 `c^n` ve `n!` ailesi girdi biraz büyüdüğü anda kullanılamaz hâle gelir. Aradaki
@@ -231,17 +229,20 @@ bir döngü içinde `O(n²)` bir fonksiyon çağırmak `O(n³)` eder.
 
 ## Alıştırmalar
 
-Ders notlarındaki beş soru. Cevaplar hemen altlarında — önce kendin çöz.
+Ders notlarındaki beş soru. Önce kendin çöz, sonra cevabı aç.
 
-**1. Aşağıdaki verimlilikleri küçükten büyüğe sıralayın:** `a) n log(n)`,
-`b) n + n² + n³`, `c) 2⁴`, `d) n^0,5`
+<Exercises>
 
-Sıralama `2⁴ < n^0,5 < n log(n) < n + n² + n³`. `2⁴ = 16`, yani *sabit* — `n`'e
-hiç bağlı değil. `n^0,5 = √n`, `n`'den yavaş büyür. Son ifadenin baskın terimi
-`n³`'tür.
+<Exercise n="1" question="Şu verimlilikleri küçükten büyüğe sıralayın: a) n log(n)  b) n + n² + n³  c) 2⁴  d) n^0,5">
 
-**2a. `XX` algoritmasının karmaşıklığı `n²` ise, bu parçanın karmaşıklığı
-nedir?**
+Sıralama `2⁴ < n^0,5 < n log(n) < n + n² + n³`.
+
+`2⁴ = 16`, yani *sabit* — `n`'e hiç bağlı değil. `n^0,5 = √n`, `n`'den yavaş
+büyür. Son ifadenin baskın terimi `n³`'tür.
+
+</Exercise>
+
+<Exercise n="2a" question="XX algoritmasının karmaşıklığı n² ise, bu parçanın karmaşıklığı nedir?">
 
 ```c
 i = 1
@@ -253,10 +254,13 @@ loop (i <= n)          ← n kez
    i = i + 1
 ```
 
-`f(n) = n · (n−1) · n² = n⁴ − n³`, yani `O(n⁴)`. Dış döngü, iç döngü ve
-gövdedeki çağrı **çarpılır**; sonra baskın terim alınır.
+`f(n) = n · (n−1) · n² = n⁴ − n³`, yani `O(n⁴)`.
 
-**2b. `doIt`'in verimlilik çarpanı `5n` ise, bu parçanın verimliliği nedir?**
+Dış döngü, iç döngü ve gövdedeki çağrı **çarpılır**; sonra baskın terim alınır.
+
+</Exercise>
+
+<Exercise n="2b" question="doIt'in verimlilik çarpanı 5n ise, bu parçanın verimliliği nedir?">
 
 ```c
 for (i = 1; i <= n; i++)
@@ -265,30 +269,43 @@ for (i = 1; i <= n; i++)
 
 `f(n) = n · 5n = 5n²`, yani `O(n²)`. 5 katsayısı birinci kuralda atılır.
 
-**3. `doIt`'in verimliliği `n²` ise, bu parçanın verimliliği nedir?**
+</Exercise>
+
+<Exercise n="3" question="doIt'in verimliliği n² ise, bu parçanın verimliliği nedir?">
 
 ```c
 for (i = 1; i < n; i *= 2)
     doIt ( ... )
 ```
 
-`f(n) = log₂n · n²`, yani `O(n² log n)`. Buradaki tuzak `i *= 2`: döngü `n` kez
-değil, *logaritmik* olarak `log₂n` kez döner.
+`f(n) = log₂n · n²`, yani `O(n² log n)`.
 
-**4. Verimliliği `n³` olan bir algoritmada bir adım 1 ns sürüyorsa, 1000
-elemanlı girdi ne kadar sürer?**
+Buradaki tuzak `i *= 2`: döngü `n` kez değil, *logaritmik* olarak `log₂n` kez
+döner.
 
-`1000³ × 1 ns = 10⁹ × 10⁻⁹ = 1 saniye`. Aynı algoritma `n = 10.000` için
-`10¹² × 10⁻⁹ = 1000` saniye, yaklaşık 17 dakika sürerdi. Girdi 10 kat artınca
-süre 1000 kat arttı.
+</Exercise>
 
-**5. `n = 4096` için 512 ms, `n = 16.384` için 1024 ms ölçülüyor. Bu
-algoritmanın verimliliği nedir?**
+<Exercise n="4" question="Verimliliği n³ olan bir algoritmada bir adım 1 ns sürüyorsa, 1000 elemanlı girdi ne kadar sürer?">
+
+`1000³ × 1 ns = 10⁹ × 10⁻⁹ = 1 saniye`.
+
+Aynı algoritma `n = 10.000` için `10¹² × 10⁻⁹ = 1000` saniye, yaklaşık 17 dakika
+sürerdi. Girdi 10 kat artınca süre 1000 kat arttı.
+
+</Exercise>
+
+<Exercise n="5" question="n = 4096 için 512 ms, n = 16.384 için 1024 ms ölçülüyor. Bu algoritmanın verimliliği nedir?">
 
 Girdi 4 katına çıkarken süre yalnızca 2 katına çıkmış, demek ki süre `√n` ile
-orantılı. Kontrol: `√4096 = 64` ve `512/64 = 8`; `√16384 = 128` ve
-`1024/128 = 8`. Katsayı ikisinde de aynı, yani `f(n) = 8√n` ve sonuç `O(n^0,5)`.
+orantılı.
+
+Kontrol: `√4096 = 64` ve `512/64 = 8`; `√16384 = 128` ve `1024/128 = 8`.
+Katsayı ikisinde de aynı, yani `f(n) = 8√n` ve sonuç `O(n^0,5)`.
 
 Buradaki genel ipucu şu soruda: "girdi `k` katına çıkınca süre kaç katına
 çıktı?" Cevap sınıfı ele verir — iki katına çıkıyorsa doğrusal, dört katına
 çıkıyorsa karesel, değişmiyorsa logaritmik.
+
+</Exercise>
+
+</Exercises>

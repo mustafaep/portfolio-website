@@ -127,6 +127,14 @@ Değer dosyanın diliyle yazılır — aynı yazı Türkçede `Veri Yapıları`,
 "Diğer" başlığı altında toplanır; hiçbir yazı `series` kullanmıyorsa liste
 başlıksız kalır.
 
+Gövdede Markdown'ın yanında `components/mdx.tsx` içinde kayıtlı bileşenler de
+kullanılabilir. `components/complexity/` altındakiler Big-O yazısı için yazıldı
+ve hepsi `lang="tr" | "en"` alır: `GrowthChart` (crosshair'lı büyüme eğrileri),
+`GrowthCalculator` (n kaydıracı), `GrowthNumbersTable`, `CategoryTable`,
+`HalfSquareFigure`, `BigOLadder`, ayrıca `Figure`, `Exercises` ve `Exercise`.
+Renkleri `globals.css` içindeki `--c-s1`…`--c-s7` sıralı rampasından alırlar;
+rampa tek hue'lu ve iki temada da doğrulandı, yeni bir renk ailesi eklemez.
+
 ## Yayınlama
 
 `main` dalına push edildiğinde Netlify otomatik deploy eder

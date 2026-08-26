@@ -11,7 +11,9 @@ tags:
 
 This post is a **study file** for the efficiency topic of BLM212 Data
 Structures. It was compiled and edited with AI from the course notes; the point
-is to have the whole topic revisable in one place.
+is to have the whole topic revisable in one place. The figures and tables are
+meant to be played with — the gap between the classes is clearer when you move
+the numbers yourself than when you read about it.
 
 ## Why measure an algorithm at all?
 
@@ -57,18 +59,13 @@ Every algorithm is fast for small `n`. The difference shows up as `n` grows —
 and it is not "somewhat slower", it is the gap between a microsecond and the
 age of the universe.
 
-```text
-T(n)          n = 10      100        1,000      10,000     magnitude
-------------  ----------  ---------  ---------  ---------  ---------
-5 (constant)  5           5          5          5          atom
-log n         3           6          9          13         amoeba
-√n            3           10         31         100        bird
-n             10          100        1,000      10,000     human
-n log n       30          600        9,000      130,000    house
-n²            100         10,000     10⁶        10⁸        elephant
-n³            1,000       10⁶        10⁹        10¹²       dinosaur
-2ⁿ            1,024       10³⁰       10³⁰⁰      10³⁰⁰⁰     universe
-```
+<Figure caption="Colour runs light to dark as cost rises. The curves are clipped at 100 steps: n³ hits the ceiling at n = 8 and 2ⁿ at n = 7. Hover the curves to read every class's exact step count at that n.">
+  <GrowthChart lang="en" />
+</Figure>
+
+The same data as numbers:
+
+<GrowthNumbersTable lang="en" />
 
 Two extremes tell the whole story. For `n = 60`, `2ⁿ ≈ 10¹⁸` steps — at one
 step per second that takes **as long as the universe has existed**. From the
@@ -80,6 +77,17 @@ One more detail: on a log-log plot **every polynomial is a straight line** —
 `n²`, `n³`, `n⁴` all look the same apart from their slope. An exponential is
 still exponential even on a log-log plot. This is why the `n^c` family counts
 as feasible and the `c^n` family does not.
+
+### Try it yourself
+
+Change `n` and watch how many steps each class needs, and how long that takes
+at one nanosecond per step. The point is how the gap widens with `n`.
+
+<GrowthCalculator lang="en" />
+
+The bars are on a log scale: length is proportional to the *digit count* of the
+step count and saturates at 10²⁰ steps. Drawn linearly, every row except `2ⁿ`
+and `n!` would be invisible — that is how large the difference is.
 
 ## Counting loops
 
@@ -139,9 +147,11 @@ for (i = 0; i < 10; i++)
 
 In the dependent quadratic loop the inner loop runs 0, 1, 2, … 9 times: 45
 iterations in total, averaging `45/10 = 4.5 ≈ (n+1)/2`. Multiplied by the outer
-count that gives `n(n+1)/2`. So roughly **half** the full square is scanned —
-and half of it and all of it are both `O(n²)`. Big-O asks about the shape, not
-the ratio.
+count that gives `n(n+1)/2`.
+
+<Figure caption="A dependent quadratic loop scans roughly half the full square. Half of it and all of it are both O(n²) — Big-O asks about the shape, not the ratio.">
+  <HalfSquareFigure lang="en" />
+</Figure>
 
 ## Deriving Big-O
 
@@ -155,12 +165,9 @@ order of*.
    `n` grows.
 2. **Drop everything but the largest term.** `n² + n → n²`.
 
-The ordering, smallest to largest: `log n`, `n`, `n log n`, `n²`, `n³`, …,
-`n^k`, …, `2ⁿ`, …, `n!`
-
-Two rules, one example: `f(n) = ½n² + ½n → O(n²)`. And another:
-`3n³ + 100n² + 5000 → n³ + n² + 1 → O(n³)` — however large the coefficient 100
-is, it cannot beat `n³`.
+<Figure caption="Two rules, one example: f(n) = ½n² + ½n → O(n²). And another: 3n³ + 100n² + 5000 → n³ + n² + 1 → O(n³) — however large the coefficient 100 is, it cannot beat n³.">
+  <BigOLadder lang="en" />
+</Figure>
 
 > Big-O is an **order of magnitude**, not a duration. An `O(n²)` algorithm can
 > be faster than an `O(n log n)` one for small `n`, because the discarded
@@ -169,20 +176,9 @@ is, it cannot beat `n³`.
 
 ## The seven efficiency categories
 
-The textbook's standard measure is given for `n = 10,000`. The table runs from
-most to least efficient.
+The textbook's standard measure is given for `n = 10,000`.
 
-```text
-efficiency            big-O        iterations    estimated time
---------------------  -----------  ------------  --------------
-Logarithmic           O(log n)     14            microseconds
-Linear                O(n)         10,000        seconds
-Linear logarithmic    O(n log n)   140,000       seconds
-Quadratic             O(n²)        10,000²       minutes
-Polynomial            O(n^k)       10,000^k      hours
-Exponential           O(c^n)       2^10,000      intractable
-Factorial             O(n!)        10,000!       intractable
-```
+<CategoryTable lang="en" />
 
 In practice the boundary sits **between polynomial and exponential**: the `n^c`
 family counts as feasible, while `c^n` and `n!` become unusable the moment the
@@ -240,18 +236,22 @@ complexity, its cost is **multiplied** by the iteration count. Calling an
 
 ## Exercises
 
-The five questions from the course notes. Answers follow each one — solve it
-first.
+The five questions from the course notes. Solve each one first, then open the
+answer.
 
-**1. Order these efficiencies from smallest to largest:** `a) n log(n)`,
-`b) n + n² + n³`, `c) 2⁴`, `d) n^0.5`
+<Exercises>
 
-The order is `2⁴ < n^0.5 < n log(n) < n + n² + n³`. `2⁴ = 16`, which is
-*constant* — it does not depend on `n` at all. `n^0.5 = √n` grows more slowly
-than `n`. The dominant term of the last expression is `n³`.
+<Exercise n="1" question="Order these efficiencies from smallest to largest: a) n log(n)  b) n + n² + n³  c) 2⁴  d) n^0.5">
 
-**2a. If algorithm `XX` has complexity `n²`, what is the complexity of this
-fragment?**
+The order is `2⁴ < n^0.5 < n log(n) < n + n² + n³`.
+
+`2⁴ = 16`, which is *constant* — it does not depend on `n` at all.
+`n^0.5 = √n` grows more slowly than `n`. The dominant term of the last
+expression is `n³`.
+
+</Exercise>
+
+<Exercise n="2a" question="If algorithm XX has complexity n², what is the complexity of this fragment?">
 
 ```c
 i = 1
@@ -263,11 +263,14 @@ loop (i <= n)          ← n times
    i = i + 1
 ```
 
-`f(n) = n · (n−1) · n² = n⁴ − n³`, so `O(n⁴)`. The outer loop, the inner loop
-and the call in the body are **multiplied**; then the dominant term is taken.
+`f(n) = n · (n−1) · n² = n⁴ − n³`, so `O(n⁴)`.
 
-**2b. If `doIt` has an efficiency factor of `5n`, what is the efficiency of
-this fragment?**
+The outer loop, the inner loop and the call in the body are **multiplied**;
+then the dominant term is taken.
+
+</Exercise>
+
+<Exercise n="2b" question="If doIt has an efficiency factor of 5n, what is the efficiency of this fragment?">
 
 ```c
 for (i = 1; i <= n; i++)
@@ -277,31 +280,43 @@ for (i = 1; i <= n; i++)
 `f(n) = n · 5n = 5n²`, so `O(n²)`. The coefficient 5 is dropped by the first
 rule.
 
-**3. If `doIt` has efficiency `n²`, what is the efficiency of this fragment?**
+</Exercise>
+
+<Exercise n="3" question="If doIt has efficiency n², what is the efficiency of this fragment?">
 
 ```c
 for (i = 1; i < n; i *= 2)
     doIt ( ... )
 ```
 
-`f(n) = log₂n · n²`, so `O(n² log n)`. The trap is `i *= 2`: the loop runs
-`log₂n` times, *logarithmically*, not `n` times.
+`f(n) = log₂n · n²`, so `O(n² log n)`.
 
-**4. In an algorithm with efficiency `n³`, one step takes 1 ns. How long does
-an input of 1000 elements take?**
+The trap is `i *= 2`: the loop runs `log₂n` times, *logarithmically*, not `n`
+times.
 
-`1000³ × 1 ns = 10⁹ × 10⁻⁹ = 1 second`. The same algorithm would take
-`10¹² × 10⁻⁹ = 1000` seconds, about 17 minutes, for `n = 10,000`. The input
-grew 10-fold and the time grew 1000-fold.
+</Exercise>
 
-**5. `n = 4096` measures 512 ms and `n = 16,384` measures 1024 ms. What is the
-efficiency of this algorithm?**
+<Exercise n="4" question="In an algorithm with efficiency n³, one step takes 1 ns. How long does an input of 1000 elements take?">
+
+`1000³ × 1 ns = 10⁹ × 10⁻⁹ = 1 second`.
+
+The same algorithm would take `10¹² × 10⁻⁹ = 1000` seconds, about 17 minutes,
+for `n = 10,000`. The input grew 10-fold and the time grew 1000-fold.
+
+</Exercise>
+
+<Exercise n="5" question="n = 4096 measures 512 ms and n = 16,384 measures 1024 ms. What is the efficiency of this algorithm?">
 
 The input grew 4-fold while the time only doubled, so the time is proportional
-to `√n`. Check: `√4096 = 64` and `512/64 = 8`; `√16384 = 128` and
-`1024/128 = 8`. The coefficient is the same in both, so `f(n) = 8√n` and the
-answer is `O(n^0.5)`.
+to `√n`.
 
-The general trick is in that question: "the input grew `k`-fold, by how much
-did the time grow?" The answer gives the class away — doubling means linear,
+Check: `√4096 = 64` and `512/64 = 8`; `√16384 = 128` and `1024/128 = 8`. The
+coefficient is the same in both, so `f(n) = 8√n` and the answer is `O(n^0.5)`.
+
+The general trick is in that question: "the input grew `k`-fold, by how much did
+the time grow?" The answer gives the class away — doubling means linear,
 quadrupling means quadratic, staying the same means logarithmic.
+
+</Exercise>
+
+</Exercises>

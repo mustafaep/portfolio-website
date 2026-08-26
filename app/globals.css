@@ -35,6 +35,23 @@
   --measure: 68ch;
   --gutter: clamp(1.25rem, 5vw, 4rem);
   --shell: 78rem;
+
+  /* Ordinal ramp for the complexity figures — efficiency class is an ordered
+     variable, so it takes one hue in monotone lightness steps rather than seven
+     identities. The hue is the accent's (156), which keeps the palette rule
+     intact: one neutral family plus one accent. Light mode runs light → dark as
+     cost rises; the light end sits at 2.05:1 on --c-bg so the first step is
+     still visible, and every adjacent gap clears ΔL 0.06. Validated with the
+     data-viz ordinal checks in both modes. --c-track is the unfilled meter
+     track: a step further off the same ramp, never a neutral gray. */
+  --c-s1: oklch(0.73 0.125 156);
+  --c-s2: oklch(0.668 0.14 156);
+  --c-s3: oklch(0.606 0.142 156);
+  --c-s4: oklch(0.545 0.126 156);
+  --c-s5: oklch(0.483 0.11 156);
+  --c-s6: oklch(0.421 0.094 156);
+  --c-s7: oklch(0.36 0.078 156);
+  --c-track: oklch(0.92 0.032 156);
 }
 
 .dark {
@@ -46,6 +63,18 @@
   --c-accent: oklch(0.874 0.165 155.1);
   --c-accent-ink: oklch(0.874 0.165 155.1);
   --c-selection: oklch(0.874 0.165 155.1 / 0.26);
+
+  /* Dark is selected, not flipped: the ramp is re-anchored so cost still reads
+     as "more" — here dim → bright against the dark surface, ending on the exact
+     dark accent. Its dim end clears 2.56:1 on --c-bg. */
+  --c-s1: oklch(0.43 0.095 156);
+  --c-s2: oklch(0.51 0.12 156);
+  --c-s3: oklch(0.59 0.14 156);
+  --c-s4: oklch(0.66 0.152 156);
+  --c-s5: oklch(0.74 0.155 156);
+  --c-s6: oklch(0.81 0.16 156);
+  --c-s7: oklch(0.874 0.165 156);
+  --c-track: oklch(0.26 0.035 156);
 }
 
 @theme inline {
@@ -56,6 +85,7 @@
   --color-line: var(--c-line);
   --color-accent: var(--c-accent);
   --color-accent-ink: var(--c-accent-ink);
+  --color-track: var(--c-track);
 
   --font-display: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;

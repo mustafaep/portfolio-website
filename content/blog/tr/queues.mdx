@@ -1,0 +1,299 @@
+---
+title: Kuyruklar
+summary: 'İki ucu birden kullanan doğrusal liste: FIFO. Dört işlem, kuyruk kodunu bozan iki özel durum, dairesel dizi hilesi ve kuyruk teorisinin bunlarla ne yaptığı.'
+date: '2026-08-27'
+series: Veri Yapıları
+seriesOrder: 5
+tags:
+  - kuyruk
+  - c
+  - veri yapıları
+---
+
+Bu yazı BLM212 Veri Yapıları dersinin kuyruk konusu için hazırlanmış bir **çalışma
+dosyası**. Ders notlarından yola çıkılarak yapay zekâ ile derlendi ve düzenlendi.
+Ortadaki dairesel kuyruk kendi enqueue ve dequeue'suyla sürülebiliyor — o bölümün
+iddiası, modülün boşalan hücreleri yeniden kullanılabilir kıldığı; `front` hâlâ
+ortalardayken `rear`'ın 5'ten 0'a sardığı o tek hamle ise bitmiş bir şemanın
+gösteremeyeceği şeyin ta kendisi.
+
+## Kuyruk nedir?
+
+Kuyruk da kısıtlı bir doğrusal listedir; ama yığından farklı olarak **iki ucu
+birden** kullanır: veri rear'dan girer, front'tan çıkar. İlk giren ilk çıkar —
+FIFO. Veriler kuyruğa alındıkları sırayla işlenir.
+
+<Figure caption="Yığında takip edilecek tek uç vardı; kuyrukta iki tane var. Yapısal fark yalnızca bu, ve diğer bütün farklar bundan çıkıyor.">
+  <QueueModelFigure lang="tr" />
+</Figure>
+
+Günlük hayattaki her sıra bir kuyruktur: market kasası, yazıcı sırası, işletim
+sisteminin görev sırası. Adalet gereken her yerde onu uygulayan şey FIFO'dur.
+
+<FactList items={[
+  { term: "front", value: "Kuyruğun başı — çıkış ucu. Silme buradan yapılır." },
+  { term: "rear", value: "Kuyruğun sonu — giriş ucu. Ekleme buradan yapılır." },
+  { term: "FIFO", value: "First In – First Out. Yığının LIFO'sunun tam tersi." },
+  { term: "Sıra korunur", value: "Yığın sırayı tersine çevirir, kuyruk korur. Kullanım alanlarındaki bütün fark buradan gelir." },
+]} />
+
+## Dört işlem
+
+Dört temel işlem var: ikisi kuyruğu değiştirir, ikisi yalnızca okur. Bunlara
+create ve destroy eklenir.
+
+<FactList items={[
+  { term: "enqueue", value: "Kuyruğun sonuna bir eleman ekler. Yer yoksa overflow." },
+  { term: "dequeue", value: "Kuyruğun başından bir eleman siler ve döndürür. Kuyruk boşsa underflow." },
+  { term: "queueFront", value: "Baştaki elemanı okur, silmez." },
+  { term: "queueRear", value: "Sondaki elemanı okur, silmez." },
+  { term: "createQueue", value: "Baş yapısını front = null, rear = null ve count = 0 ile kurar." },
+  { term: "destroyQueue", value: "Tüm düğümleri ve baş yapısını sisteme geri verir." },
+]} />
+
+Kuyruğu değiştiren iki işlemin de **birer özel durumu** var ve kuyruk kodundaki
+bütün zorluk bu ikisinden ibaret. `enqueue`'nunki boş kuyruk:
+
+```text
+Algorithm enqueue (queue, item)
+1 if (queue full) return false
+2 allocate (newPtr)
+3 newPtr->data = item
+4 newPtr->next = null
+5 if (queue->count is 0)              // boş kuyruğa ekleme
+   1  queue->front = newPtr
+6 else
+   1  queue->rear->next = newPtr
+7 queue->rear  = newPtr
+8 queue->count = queue->count + 1
+9 return true
+```
+
+Kuyruk boşsa `front` da yeni düğüme çevrilmelidir — yoksa kuyruğun başı hiçbir
+yeri göstermez. `dequeue`'nun özel durumu ise bunun ayna görüntüsü: son elemanın
+çıkması.
+
+```text
+Algorithm dequeue (queue, item)
+1 if (queue->count is 0) return false
+2 item       = queue->front->data
+3 deleteLoc  = queue->front
+4 if (queue->count is 1)              // son eleman siliniyor
+   1  queue->rear = null
+5 queue->front = queue->front->next
+6 queue->count = queue->count - 1
+7 recycle (deleteLoc)
+8 return true
+```
+
+Son eleman çıkarken `rear` da null yapılmalıdır; yoksa geriye sisteme iade
+edilmiş bir düğümü gösteren sarkık bir işaretçi kalır.
+
+Geri kalan her şey rutin bağlı liste işidir. `queueFront` ile `dequeue`, silme
+kısmı dışında birebir aynıdır: önce kuyruk boş mu diye bakılır, boşsa false
+döner; değilse veri `dataOut` üzerinden geri iletilip true döndürülür.
+
+## Bağlı liste ile
+
+Baş yapısı yığındakinden bir alan fazladır: `front`, `rear` ve `count`. Düğümler
+tek yönlü bağlıdır ve zincir daima front'tan rear'a doğru akar.
+
+<Figure caption="rear neden ayrıca tutulur? Tutulmasaydı her enqueue için listenin sonuna kadar yürümek gerekirdi ve işlem O(1) yerine O(n) olurdu.">
+  <QueueLinkedFigure lang="tr" />
+</Figure>
+
+Geriye doğru bağ yoktur ve gerekmez de: silme front'tan yapılır, yani zaten
+bulunduğun yerden.
+
+## Dizi ve dairesellik
+
+Kuyruğu diziyle gerçekleştirmek ilk bakışta kolay görünür — `front` ve `rear`
+birer indeks olur. Ama düz bir dizide **kuyruk sağa doğru sürünür** ve sol taraf
+bomboş dururken kendini dolu ilan eder.
+
+<Figure caption="Dequeue soldan boşaltır, enqueue sağa ekler; kuyruk diziyi sağa doğru terk eder. Çözüm dizinin sonunu başına bağlamaktır.">
+  <ArrayCreepFigure lang="tr" />
+</Figure>
+
+Çözüm modüler aritmetik:
+
+```c
+enqueue:  rear  = (rear  + 1) % maxSize
+dequeue:  front = (front + 1) % maxSize
+```
+
+Son indekse gelindiğinde `%` değeri 0'a sarar; böylece soldaki boşalan hücreler
+yeniden kullanıma girer.
+
+Geriye klasik bir tuzak kalır. Dairesel dizide `front == rear` hem tam boş hem de
+tam dolu durumunda oluşabilir — iki durum yalnızca indekslerden ayırt edilemez.
+Bu yüzden ayrı bir `count` alanı tutulur: `count == 0` boş, `count == maxSize`
+dolu.
+
+<CircularQueueLab lang="tr" />
+
+Denemeye değer: altı kez enqueue, sonra üç kez dequeue, sonra tekrar enqueue.
+`rear`'ın halkada 5'ten 0'a atladığını ve boşalan hücreleri yeniden kullandığını
+göreceksin — düz dizide mümkün olmayan şey buydu. Sınırlardayken düğmelere
+basmak da denemeye değer; sözde kodun ilk satırlarındaki iki kontrolün varlık
+sebebi orada görünür.
+
+## Kuyruk teorisi
+
+Kuyruk teorisi, kuyrukların performansını tahmin etmek için kullanılan uygulamalı
+matematik ve bilgisayar bilimleri alanıdır. Veri yapısından çok, o veri yapısıyla
+modellenen gerçek dünyayı inceler.
+
+<FactList items={[
+  { term: "single-server queue", value: "Aynı anda yalnızca bir müşteriye hizmet verir — köşe başındaki büfe." },
+  { term: "multi-server queue", value: "Aynı anda birden fazla müşteriye hizmet verir — banka, postane." },
+  { term: "multiqueues", value: "Birden çok tek sunuculu kuyruk yan yana — market kasaları." },
+]} />
+
+Terimleri tam olarak bilmek gerekiyor, çünkü tahminler bunlardan kuruluyor:
+
+<FactList items={[
+  { term: "customer", value: "Hizmete ihtiyacı olan herhangi bir kişi ya da şey — bir yazdırma işi de müşteridir." },
+  { term: "service", value: "İstenen sonucu elde etmek için gereken her türlü faaliyet." },
+  { term: "arrival rate", value: "Müşterilerin kuyruğa geliş sıklığı. Rastgele ya da düzenli olabilir." },
+  { term: "service time", value: "Bir müşteri isteğini tamamlamak için gereken ortalama süre." },
+  { term: "queue time", value: "Müşterilerin kuyrukta beklediği ortalama süre." },
+  { term: "response time", value: "queue time + service time — kuyruğa girişten sunucudan çıkışa kadar." },
+]} />
+
+Kuyruk teorisinin işi bu örüntülerden üçünü tahmin etmektir: kuyruk süresi,
+ortalama kuyruk boyutu ve maksimum kuyruk boyutu. Tahminler iki faktöre dayanır —
+geliş hızı ve ortalama hizmet süresi. İdeal durumda müşteriler hizmet süresine
+uygun bir sıklıkta gelir; ama işler nadiren ideale uyar, bu yüzden bazen sunucu
+boşta kalır, bazen sıra birikir.
+
+Bir kuyruk modeli kurulduktan sonra sistemde önerilen değişiklikler yapılmadan
+incelenebilir. "Ortalama servis süresini %15 azaltan bir otomasyon kursak kaç
+kişiye daha az ihtiyacımız olurdu?" ve "bir sunucu daha eklemeden bu düzen ne
+kadar sürdürülebilir?" birer kuyruk teorisi sorusudur.
+
+## Kategorize etme
+
+Kategorize etme, verileri **temel sırayı bozmadan** yeniden düzenlemektir. Burada
+dikkatli olmak gerek: bu bir sıralama değildir. Sonuç sıralı bir liste değil,
+belirttiğin kurallara göre gruplanmış bir listedir.
+
+<Figure caption="Neden yığın değil de kuyruk? Çünkü grup içindeki orijinal sıranın hayatta kalması gerekiyor. Yığınla her grup ters dönerdi — FIFO ile LIFO arasındaki farkın en net göründüğü örnek bu.">
+  <CategorizeFigure lang="tr" />
+</Figure>
+
+Çözüm tek cümle: dört kategorinin her biri için bir kuyruk oluştur, sayıları
+okudukça uygun kuyruğa koy, sonunda kuyrukları sırayla yazdır. Bu bir
+multiple-queue uygulamasıdır.
+
+## Simülasyon
+
+Kuyruk simülasyonu, kuyrukların performansı hakkında istatistik üretmek için
+kullanılan bir modelleme etkinliğidir. Ders örneği tek pencereli bir büfe.
+
+<FactList items={[
+  { term: "Model", value: "Bir pencere, bir çalışan, aynı anda tek müşteri. Günde 8 saat ⇒ 480 dakikalık model." },
+  { term: "Zaman birimi", value: "Aksiyonlar 1 dakikalık aralıklarla başlar ve durur." },
+  { term: "Geliş", value: "Ortalama 4 dakikada bir müşteri. 1–4 arası rastgele sayı: 4 ise müşteri geldi, değilse gelmedi." },
+  { term: "Hizmet süresi", value: "1–10 dakika arası, müşteri işleme alınırken rastgele belirlenir." },
+  { term: "Her dakika", value: "Sunucu meşgul mü boş mu? Boşsa sıradaki müşteri alınır; meşgulse bekleyenler kuyrukta kalır." },
+  { term: "Dört yapı", value: "queue head · queue node · mevcut müşteri durumu · simülasyon istatistikleri." },
+]} />
+
+Simülasyonun amacı, gerçek büfeyi değiştirmeden "ne olurdu?" sorusunu
+cevaplamaktır. Çıktısı ortalama bekleme süresi ve maksimum kuyruk boyutu gibi
+istatistiklerdir — yani kuyruk teorisinin tahmin etmeye çalıştığı sayıların
+deneyle üretilmiş hâli.
+
+## Kendini sına
+
+<Exercises>
+
+<Exercise n="1" question="Kuyruk kodundaki iki özel durum nedir ve atlanırsa ne bozulur?">
+
+**Boş kuyruğa ekleme** ve **son elemanı silme.**
+
+`enqueue` boş kuyruğu kontrol etmezse yalnızca `rear` güncellenir, `front` null
+kalır: kuyrukta baştan erişilemeyen bir eleman durur. `dequeue` son elemanı
+kontrol etmezse `rear` az önce sisteme iade edilmiş bir düğümü göstermeye devam
+eder — sarkık işaretçi — ve bir sonraki `enqueue` onun üzerinden yazar.
+
+İki fonksiyondaki geri kalan her şey rutin bağlı liste işi; hataların tam olarak
+bu iki noktada toplanmasının sebebi de bu.
+
+</Exercise>
+
+<Exercise n="2" question="front ve bağlar zaten sonu bulmaya yeterken rear neden baş yapısında ayrıca tutuluyor?">
+
+Çünkü bulmak, oraya kadar yürümek demek. `rear` işaretçisi olmasaydı her
+`enqueue` son düğüme ulaşmak için bütün zinciri gezmek zorunda kalırdı ve işlem
+**O(1) yerine O(n)** olurdu — üstelik enqueue, kuyruğun var olma sebebi olan iki
+işlemden biri.
+
+Fazladan bir alan, sabit miktarda bellekle sabit zamanlı bir ekleme satın alıyor.
+
+</Exercise>
+
+<Exercise n="3" question="Dairesel dizide front == rear neden iki zıt anlama gelebiliyor ve bunu ne çözer?">
+
+Çünkü iki uç da aynı halkada dönüyor. Yeterince enqueue'dan sonra `rear` arkadan
+gelip `front`'a yetişir; yeterince dequeue'dan sonra `front` gidip `rear`'a
+yetişir. İki durumda da indeksler aynıdır ve hangisinin olduğunu indeksler
+söylemez.
+
+Ayrı bir `count` alanı çözer: `count == 0` boş, `count == maxSize` dolu. (Diğer
+klasik cevap, bir hücreyi kalıcı olarak boş bırakmaktır; böylece iki durum asla
+aynı indeks çiftini üretemez.)
+
+</Exercise>
+
+<Exercise n="4" question="3 22 12 6 … listesini dört gruba ayırırken neden kuyruk doğru, yığın yanlış yapı?">
+
+Çünkü istenen şey verileri **grup içindeki sırayı bozmadan** yeniden gruplamak ve
+sırayı koruyan yapı kuyruktur.
+
+Sayıları yığınlara koyarsan her grup ters çıkar: Q1, 3 6 9 4 5 yerine 5 4 9 6 3
+yazdırır. Veri doğru gruplanmış ama yanlış sıralanmış olur. Derste FIFO ile LIFO
+arasındaki seçimin cevabın doğruluğunu belirlediği en net örnek budur.
+
+</Exercise>
+
+<Exercise n="5" question="Q1: 42 30 41 31 19 20 25 14 10 11 12 15, Q2: 1 4 5 4 10 13 (önden arkaya). Bu kod çalıştıktan sonra Q3'ün içeriği ne olur?">
+
+```text
+1 Q3 = createQueue
+2 count = 0
+3 loop (not empty Q1 and not empty Q2)
+   1  count = count + 1
+   2  dequeue (Q1, x)
+   3  dequeue (Q2, y)
+   4  if (y equal to count)
+      1  enqueue (Q3, x)
+```
+
+**Q3: 42 31**
+
+<QueueTraceTable lang="tr" />
+
+Püf noktası döngünün gövdesinde değil koşulunda: döngü yalnızca *iki* kuyrukta da
+eleman varken döner. Q2 altı turda tükenir ve Q1'in son altı elemanı hiç
+okunmaz.
+
+</Exercise>
+
+<Exercise n="6" question="Prefix ifadeler yığınla değil kuyrukla da hesaplanabilir. Nasıl?">
+
+İfadeyi tekrar tekrar tarayarak. Her taramada bir operatörü hemen izleyen iki
+operand aranır; bulunduğu yerde değeri hesaplanıp yerine konur. İfade her
+taramada kısalır, sonunda tek bir değer kalır.
+
+```text
+-+*9+28*+4863  →  -+*9 10 *12 6 3  →  -+90 72 3  →  -162 3  →  159
+```
+
+Yığınlı sürüm bunu tek geçişte yapar, bu yapmaz; hiçbir şeyi ertelememenin bedeli
+bu. Yığının belleğinin yerini burada tekrar tekrar tarama alıyor.
+
+</Exercise>
+
+</Exercises>

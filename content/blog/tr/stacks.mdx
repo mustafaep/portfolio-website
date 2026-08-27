@@ -1,0 +1,333 @@
+---
+title: Yığınlar
+summary: 'Tek uçtan çalışan doğrusal liste: LIFO. Sekiz işlem, iki gerçekleştirme ve yığının asıl işe yaradığı dört yer — tersine çevirme, ayrıştırma, erteleme ve geri izsürme.'
+date: '2026-08-27'
+series: Veri Yapıları
+seriesOrder: 4
+tags:
+  - yığın
+  - c
+  - veri yapıları
+---
+
+Bu yazı BLM212 Veri Yapıları dersinin yığın konusu için hazırlanmış bir **çalışma
+dosyası**. Ders notlarından yola çıkılarak yapay zekâ ile derlendi ve düzenlendi.
+Erteleme bölümündeki çevirici kendi yazdığın ifadeyi işliyor — o bölümün iddiası
+bir operatörün neye benzediği değil *ne zaman* kullanıldığı üzerine, ve kuralı
+gerçekten kavrayıp kavramadığını sınayan şey kendi ifadeni yazmak.
+
+## Yığın nedir?
+
+Yığın, verilerin eklenmesinin ve silinmesinin **tepe (top) adı verilen tek bir
+uçla kısıtlandığı** doğrusal listedir. Kısıtlı bir listedir: genel doğrusal
+listede her noktadan ekleme yapılabilirken burada yalnızca o uçtan yapılabilir.
+
+<Figure caption="Her şey tek uçta olup bittiği için sekiz işlemin hepsi O(1) — gezinilecek bir şey yok. stackTop o ucu silmeden okur.">
+  <StackModelFigure lang="tr" />
+</Figure>
+
+Sezgisel tanımı şu: yalnızca en üste bir nesne ekleyip en üstten
+çıkarabildiğiniz her durum bir yığındır. Alttaki bir nesneyi almak istiyorsanız,
+önce üstündekilerin hepsini kaldırmanız gerekir.
+
+<FactList items={[
+  { term: "Kısıtlı liste", value: "Ekleme ve silme yalnızca tek uçtan. Genel doğrusal listede ikisi de her noktadan yapılabilir." },
+  { term: "LIFO", value: "Last In – First Out. Bir dizi veriyi yığına koyup çıkarırsanız sıra tersine döner." },
+  { term: "Overflow", value: "Yeni eleman için yer yok. Push öncesinde kontrol edilmeli." },
+  { term: "Underflow", value: "Boş yığında pop denemesi. Pop öncesinde kontrol edilmeli." },
+]} />
+
+## Sekiz işlem
+
+Ders kitabının tanımladığı sekiz işlem, herhangi bir temel yığın problemini
+çözmeye yeter. Uygulama daha fazlasını gerektiriyorsa kolayca eklenebilir.
+
+<FactList items={[
+  { term: "createStack", value: "Dinamik bellekte baş düğüm ayırır; top = null, count = 0 yapıp adresini döndürür." },
+  { term: "pushStack", value: "Tepeye bir eleman ekler. Önce yığın dolu mu diye bakılır." },
+  { term: "popStack", value: "Tepedekini alır ve siler. Önce yığın boş mu diye bakılır." },
+  { term: "stackTop", value: "Tepedekini kopyalar, silmez. Mantığı pop ile aynı — sadece silme kısmı yok." },
+  { term: "emptyStack", value: "Yığın boş mu? Veri gizleme için gerekli: çağıran program baş yapısına erişemeyebilir." },
+  { term: "fullStack", value: "Yer kaldı mı? Dinamik bellekte \"dolu\", ancak bellek tükendiğinde olur." },
+  { term: "stackCount", value: "Yığındaki eleman sayısı — baş yapısındaki sayaçtan okunur." },
+  { term: "destroyStack", value: "Tüm düğümleri, sonra baş yapısını sisteme geri verir; null döndürür." },
+]} />
+
+`pushStack` overflow kontrolüyle açılır ve o geçmeden başka hiçbir şey yapmaz:
+
+```text
+Algorithm pushStack (stack, data)
+1 if (stack full)
+   1  success = false
+2 else
+   1  allocate (newPtr)
+   2  newPtr->data = data
+   3  newPtr->next = stack->top      // önce yeni düğümün bağı
+   4  stack->top   = newPtr          // sonra tepe işaretçisi
+   5  stack->count = stack->count + 1
+   6  success = true
+3 return success
+```
+
+İşaretli iki satır, bağlı listedeki "başa ekleme" ile birebir aynı — yazılma
+sırası dahil. `popStack` de "ilk düğümü silme"nin adı değişmiş hâli:
+
+```text
+Algorithm popStack (stack, dataOut)
+1 if (stack empty)
+   1  success = false
+2 else
+   1  dltPtr       = stack->top
+   2  dataOut      = stack->top->data
+   3  stack->top   = stack->top->next   // önce zinciri kurtar
+   4  stack->count = stack->count - 1
+   5  recycle (dltPtr)                  // sonra düğümü geri ver
+   6  success = true
+3 return success
+```
+
+Yani yığın aslında yeni bir konu değil. Bağlı listede öğrendiğin iki işlem,
+başka hiçbir noktaya izin verilmemiş hâlde karşına çıkıyor — ve yığını yararlı
+kılan şey tam olarak o yasak. `stackTop` ise `popStack`'in silme kısmı çıkarılmış
+hâli: boşluk kontrolü ve kopyalama kalır, 1, 3 ve 5. satırlar gider.
+
+## İki gerçekleştirme
+
+Yığının maksimum boyutu program yazılmadan önce hesaplanabiliyorsa, **dizi
+gerçekleştirmesi bağlı listeden hem daha verimli hem de çok daha anlaşılırdır.**
+Hesaplanamıyorsa bağlı liste.
+
+<Figure caption="İki veri yapısı birbirine hiç benzemez, algoritmalar ise aynıdır. Bağlı listede bağların taşıdığı şeyi — sıralamayı — dizide fiziksel komşuluk zaten sağlıyor.">
+  <StackImplementationsFigure lang="tr" />
+</Figure>
+
+Dizi gerçekleştirmesinde üç şey değişir: `top` işaretçi değil indeks olur,
+yanında maksimum eleman sayısı tutulur ve `next` alanı ortadan kalkar.
+
+Bellek ayırmadan akılda kalması gereken bir ayrıntı: `calloc(n, size)` de
+`malloc` da bellek ayırıp başlangıç adresini döndürür; fark şu ki `calloc`
+ayırdığı hücreleri sıfırlar, `malloc` sıfırlamaz. `malloc` ile yeni ayrılmış bir
+hücreyi yazmadan okursanız çöp (garbage) değer alırsınız.
+
+## Dört uygulama ve tersine çevirme
+
+Yığın uygulamaları dört geniş aileye ayrılır. Dördünün de altındaki sebep aynı:
+**bir şeyi şimdi kullanamıyoruz ve sonra ters sırada lazım olacak.**
+
+<FactList items={[
+  { term: "Tersine çevirme", value: "Veri sırasını ters çevirmek. Listeyi tersten yazdırma, ondalık sayıyı ikiliye çevirme." },
+  { term: "Ayrıştırma", value: "Veriyi sonra işlenmek üzere bağımsız parçalara ayırmak. Derleyicilerin ilk aşaması." },
+  { term: "Erteleme", value: "Verinin kullanımını daha sonraki bir noktaya ertelemek. Infix→postfix ve postfix hesaplama." },
+  { term: "Geri izsürme", value: "Karar noktalarını saklayıp çıkmaza girince en yakın karara dönmek." },
+]} />
+
+### Ondalıktan ikiliye
+
+Bir sayıyı ikiliye çevirmek için sürekli 2'ye böler, kalanları yazarsınız. Sorun
+şu: **kalanlar ters sırada üretilir.** Üretildiği gibi basıldığında 19 sayısı
+11001 çıkar; doğru cevap 10011'dir.
+
+<Figure caption="Fikir tek cümle: üretildiği anda basma, yığına it; sonunda çekip bas. Bir bağlı listeyi tersten yazdırmak da aynı numarayı hiç değiştirmeden kullanır.">
+  <BinaryConversionFigure lang="tr" />
+</Figure>
+
+Programda dikkat edilecek bir nokta daha var: bu tür programlarda **yığın
+yapısına asla doğrudan başvurulmaz.** Tüm referanslar yığın ADT'sinin
+arayüzünden geçer. Kapsülleme ve yeniden kullanılabilirliğin pratikteki
+karşılığı budur.
+
+## Ayrıştırma
+
+Ayrıştırma, veriyi daha sonra işlenmek üzere bağımsız parçalara ayırmaktır. Bir
+derleyici kaynak programı makine diline çevirmeden önce onu anahtar kelimelere,
+adlara ve simgelere — token'lara — ayırmak zorundadır.
+
+Klasik ödev problemi, bir cebirsel ifadedeki eşleştirilmemiş parantezlerdir.
+Algoritma tek cümle — açılanı yığına it, kapanınca çek — ama üç ayrı biçimde
+sonlanır.
+
+<Figure caption="Herhangi bir andaki yığın yüksekliği, o ana kadar kapanmamış parantez sayısıdır. Üç sonuçtan ikisi hata ve bunlar farklı hatalar: biri fazladan bir parantez, diğeri eksik bir parantez.">
+  <ParenMatchFigure lang="tr" />
+</Figure>
+
+Aynı mantık süslü ve köşeli parantezlere de genişletilir: yığına *hangi tür*
+parantezin itildiği de saklanır ve kapanışta iki tür birbirine karşı kontrol
+edilir.
+
+## Erteleme
+
+Bir uygulamanın mantığı çoğu zaman bir değerin kullanımının daha sonraki bir
+noktaya ertelenmesini gerektirir. Aritmetik ifadeler bunun en temiz örneği ve üç
+gösterimle yazılırlar:
+
+<FactList items={[
+  { term: "Prefix", value: "+ a b — operatör operandlardan önce gelir." },
+  { term: "Infix", value: "a + b — operatör arada durur. İnsanların yazdığı biçim." },
+  { term: "Postfix", value: "a b + — operatör operandlardan sonra gelir." },
+]} />
+
+Infix gösterimin sakıncası şu: değerlendirme sırasını kontrol etmek için parantez
+gerekir, üstelik iki öncelik sınıfı vardır. Postfix ve prefix'te parantez hiç
+gerekmez, tek bir değerlendirme kuralı vardır. Derleyicilerin kaynak kodu
+değerlendirmeden önce postfix'e çevirmesinin sebebi budur — dönüşüm operandları
+operatörlerden ayırır.
+
+Öncelik isteğe bağlı değil. `A*B+C` için iki aday postfix var, `ABC*+` ve
+`AB*C+`; doğru olanı ikinci yapan şey aritmetik önceliktir, yani çarpmanın
+toplamadan önce gelmesi. Öncelik kuralı olmadan dönüşüm tek anlamlı değildir.
+
+### Elle dönüşüm
+
+1. Aritmetik öncelikleri kullanarak ifadeyi tamamen parantezli hâle getir.
+2. En içteki ifadeden başlayarak her parantezin içini postfix'e çevir; operatörü
+   o parantezin kapanışının önüne taşı.
+3. Bütün parantezleri at.
+
+```text
+A + B * C  →  ( A + ( B * C ) )  →  ( A ( B C * ) + )  →  A B C * +
+```
+
+Elle yapmak için iyi, bilgisayara yaptırmak için fazla dolambaçlı. Algoritmik
+yöntem bunun yerine yığın kullanır.
+
+### Yığınla dönüşüm
+
+- Operand doğrudan çıktı ifadesine kopyalanır.
+- Operatör yığına itilir.
+- Sonraki operand yine çıktıya kopyalanır.
+- Sonraki operatörün önceliği yığının tepesindekinden **yüksekse** itilir; değilse
+  yığındaki çekilip çıktıya yazılır, sonra yenisi itilir.
+- Son operand çıktıya kopyalanana kadar tekrarlanır.
+- Yığında kalan operatörler çekilip çıktıya yazılır.
+
+Bir incelik daha var. Düşük ya da eşit öncelikli bir operatör tepeyi çıkmaya
+zorladıysa **yeni tepeye de bakılır** — o da yüksek ya da eşit öncelikliyse o da
+çekilir. Yani yeni operatör itilmeden önce birkaç operatör çıktıya gidebilir.
+
+<FactList items={[
+  { term: "Öncelik 2", value: "* /" },
+  { term: "Öncelik 1", value: "+ −" },
+  { term: "Öncelik 0", value: "( — yığından hiçbir şey çıkarmaz; kendisi ancak ) görülünce atılır." },
+]} />
+
+<ExpressionLab lang="tr" />
+
+İkinci sekme aynı yığını ters yönde çalıştırır. Postfix'te operandlar
+operatörlerden *önce* geldiği için bu sefer kullanımı ertelenmesi gereken şey
+operatörler değil **operandlardır**: her operand yığına itilir, bir operatör
+görüldüğünde tepeden iki operand çekilir, işlem yapılır ve sonuç geri itilir.
+
+## Geri izsürme
+
+Geri izsürme, bir başlangıç noktasından belirli bir hedefe giden uygun bir yolu
+bulma yöntemidir. Karar analizinde, uzman sistemlerde ve bilgisayar oyunlarında
+yaygındır.
+
+<Figure caption="Doğru yolu göz hemen görüyor; bilgisayarın bir algoritmaya ihtiyacı var. İki kural yeter: her karar noktasında nerede olduğunu hatırla, ve çıkmaza girince en yakın karar noktasına dön — en baştan başlama.">
+  <BacktrackFigure lang="tr" />
+</Figure>
+
+"En yakın karar noktasına dön" cümlesi bir LIFO ifadesidir: **en son kaydedilen
+karar noktası, ilk geri dönülecek olandır.** Veri yapısının yığın olmasının
+sebebi budur.
+
+Yığına neyin itileceği sonunda ne istediğine bağlı. Yalnızca hedefi bulmak
+yeterliyse sadece dallanma noktaları itilir. Hedefe giden yolun yazdırılması da
+gerekiyorsa **geçerli yoldaki düğümler de itilmelidir** — ve artık yığında iki
+farklı türde şey bulunduğu için her birine hangisi olduğunu söyleyen bir bayrak
+gerekir: yol düğümü (path token) mü, geri dönüş noktası (backtracking token) mu.
+
+## Yığın ve alt yordamlar
+
+Yığın yalnızca senin yazdığın bir veri yapısı değil. Bilgisayarın alt program
+çağrılarını yürütme biçiminin ta kendisi: tüm parametreler çağıran programdan alt
+yordama ve tersine bir yığın üzerinden aktarılır.
+
+<Figure caption="Stack frame, belirli bir alt yordam için yığında ayrılan alt alandır: alt yordama girildiğinde yaratılır, kontrol geri devredilirken serbest bırakılır. Yerel değişkenler de yer kazanmak ve erişimi kolaylaştırmak için frame içine konabilir.">
+  <StackFrameFigure lang="tr" />
+</Figure>
+
+İşlemcinin genel amaçlı register'ları hem çağıran program hem de alt yordam
+tarafından ayrı ayrı kullanılır, bu yüzden içeriklerinin çağrı boyunca korunması
+gerekir — frame'in ② numaralı parçası bu iş içindir.
+
+Özyinelemenin bedeli de burada duruyor. **Her özyinelemeli çağrı yeni bir stack
+frame demektir** ve hepsi aynı anda bellektedir: `factorial(3)` üç frame üretir.
+Özyineleme dersinde "hem zaman hem bellek maliyeti getirir" denirken bellek
+kısmıyla kastedilen buydu.
+
+## Kendini sına
+
+<Exercises>
+
+<Exercise n="1" question="pushStack neden bağlı listeye başa ekleme ile birebir aynı kod?">
+
+Çünkü zaten o işlem. Yığının tepesi listenin başıdır ve push, onun önüne yeni bir
+düğüm koymak demektir: yeni düğümün bağı mevcut tepeye çevrilir, sonra tepe
+işaretçisi yeni düğüme çevrilir.
+
+Sıra kuralı da aynı ve aynı sebeple. Önce `top`'u yeni düğüme çevirirsen yığının
+geri kalanının adresi hiçbir yerde kayıtlı kalmaz.
+
+</Exercise>
+
+<Exercise n="2" question="19'u ikiliye çevirirken kalanlar 1 1 0 0 1 çıkıyor. Neden her kalanı üretildiği anda basamayız?">
+
+Çünkü bölme bitleri **en anlamsız uçtan** üretir, oysa basılmaları en anlamlı
+uçtan gerekir. Üretildiği gibi basıldığında 19 sayısı 11001 okunur — ki o 25
+eder, 19 değil.
+
+Kalanlara geldikleri sıranın tam tersinde ihtiyaç duyulur; bu, tersine çevirme
+probleminin tanımıdır, o da yığındır.
+
+</Exercise>
+
+<Exercise n="3" question="Infix→postfix algoritmasında açılan paranteze 0 önceliği vermek ne kazandırır?">
+
+Parantezin **yığından hiçbir şey çıkarmamasını** ve altındaki hiçbir şeye
+üstünden gelen bir operatörün ulaşamamasını.
+
+Her operatörün önceliği 1 ya da 2 olduğu için, "önceliği en az bu kadar olan her
+şeyi çek" döngüsü daima bir `(` görünce durur. O tek sayı, parantezi bir zemine
+çeviren şeydir. `(` kendisi önceliğe göre hiç çekilmez — eşleşen `)` geldiğinde
+atılır.
+
+</Exercise>
+
+<Exercise n="4" question="A*B+C için iki aday postfix var: ABC*+ ve AB*C+. Hangisi doğru, diğeri neyi hesaplar?">
+
+Doğru olan `AB*C+`. Okuyalım: A itilir, B itilir, `*` → A*B, C itilir, `+` →
+(A*B)+C.
+
+`ABC*+` ise A+(B*C) hesaplar — aynı operatörler, farklı çiftlere uygulanmış.
+İkisi de geçerli birer postfix ifadesi; asıl mesele bu: öncelik kuralı olmadan
+dönüşüm tek anlamlı değildir, ve aritmetik önceliğe uyan, infix ifadenin
+kastettiği şeyi ifade eden olandır.
+
+</Exercise>
+
+<Exercise n="5" question="Geri izsürme neden kuyruk değil de yığın?">
+
+*En yakın* kelimesi yüzünden. Çıkmaza girince en yakın karar noktasına dönülür ve
+en yakın olan, en son kaydedilendir — last in, first out.
+
+Kuyruk kullanılsaydı geriye **ilk** kaydedilen karar noktası verilirdi; bu da
+neredeyse en baştan başlamak ve çıkmaz olduğu zaten bilinen her yeri yeniden
+yürümek demektir.
+
+</Exercise>
+
+<Exercise n="6" question="Özyineleme neden yalnızca zaman değil bellek de harcar?">
+
+Çünkü her çağrı kendi stack frame'ini alır — parametreler, saklanan register'lar,
+dönüş adresi, dönüş değeri — ve bir frame ancak o çağrı geri döndüğünde serbest
+bırakılır.
+
+Özyinelemede taban duruma ulaşılana kadar hiçbir çağrı geri dönmez, yani ilk
+çağrıdan sonuncuya kadar bütün frame'ler aynı anda bellektedir. Bellek maliyeti
+özyinelemenin derinliğiyle büyür; kontrolden çıkmış bir özyinelemenin sadece
+yavaş bir programla değil, stack overflow ile bitmesinin sebebi de budur.
+
+</Exercise>
+
+</Exercises>

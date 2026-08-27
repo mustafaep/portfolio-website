@@ -1,0 +1,339 @@
+---
+title: Stacks
+summary: 'The linear list restricted to a single end: LIFO. Eight operations, two implementations, and the four things stacks are actually for — reversing, parsing, postponement and backtracking.'
+date: '2026-08-27'
+series: Data Structures
+seriesOrder: 4
+tags:
+  - stack
+  - c
+  - data structures
+---
+
+This post is a **study file** for the stack topic of BLM212 Data Structures. It
+was compiled and edited with AI from the course notes. The converter in the
+postponement section takes an expression of your own — the claim that section
+makes is about *when* an operator is used rather than what it looks like, and
+typing your own expression is what tests whether you have the rule.
+
+## What a stack is
+
+A stack is a linear list in which **insertion and deletion are restricted to one
+end**, called the top. It is a restricted list: a general linear list can be
+inserted into at any point, a stack only at the one.
+
+<Figure caption="Everything happens at one end, which is what makes all eight operations O(1) — there is nothing to walk. stackTop reads that end without removing it.">
+  <StackModelFigure lang="en" />
+</Figure>
+
+The intuitive definition: any situation in which you can only put an object on
+top and only take the top one off is a stack. If you want something further down,
+everything above it has to come off first.
+
+<FactList items={[
+  { term: "Restricted list", value: "Insertion and deletion at one end only. A general linear list allows both anywhere." },
+  { term: "LIFO", value: "Last In – First Out. Push a run of values and pop them back and the order is reversed." },
+  { term: "Overflow", value: "No room for the new element. Has to be checked before a push." },
+  { term: "Underflow", value: "A pop attempted on an empty stack. Has to be checked before a pop." },
+]} />
+
+## The eight operations
+
+The eight the textbook defines are enough to solve any basic stack problem. An
+application that needs more can add them easily.
+
+<FactList items={[
+  { term: "createStack", value: "Allocates the head node in dynamic memory, sets top = null and count = 0, returns its address." },
+  { term: "pushStack", value: "Adds an element on top. Checks first whether the stack is full." },
+  { term: "popStack", value: "Takes the top element off and deletes it. Checks first whether the stack is empty." },
+  { term: "stackTop", value: "Copies the top element without removing it. The same logic as pop, minus the deletion." },
+  { term: "emptyStack", value: "Is the stack empty? Needed for data hiding: the caller may have no access to the head structure." },
+  { term: "fullStack", value: "Is there room left? In dynamic memory \"full\" only happens when memory runs out." },
+  { term: "stackCount", value: "How many elements are in the stack — read from the counter in the head structure." },
+  { term: "destroyStack", value: "Gives every node and then the head structure back to the system; returns a null pointer." },
+]} />
+
+`pushStack` opens with the overflow check and does nothing else until it passes:
+
+```text
+Algorithm pushStack (stack, data)
+1 if (stack full)
+   1  success = false
+2 else
+   1  allocate (newPtr)
+   2  newPtr->data = data
+   3  newPtr->next = stack->top      // the new node's link first
+   4  stack->top   = newPtr          // the top pointer second
+   5  stack->count = stack->count + 1
+   6  success = true
+3 return success
+```
+
+Those two marked lines are the linked list's "insert at the head", unchanged,
+including the order they have to be written in. `popStack` is "delete the first
+node" under a different name:
+
+```text
+Algorithm popStack (stack, dataOut)
+1 if (stack empty)
+   1  success = false
+2 else
+   1  dltPtr       = stack->top
+   2  dataOut      = stack->top->data
+   3  stack->top   = stack->top->next   // rescue the chain first
+   4  stack->count = stack->count - 1
+   5  recycle (dltPtr)                  // then give the node back
+   6  success = true
+3 return success
+```
+
+So a stack is not new material. It is two operations you already know from the
+linked list, with every other position forbidden — and the forbidding is the
+whole of what makes it useful. `stackTop` is `popStack` with the deletion taken
+out: the empty check and the copy stay, lines 1, 3 and 5 go.
+
+## Two implementations
+
+If the maximum size of the stack can be worked out before the program is written,
+**the array implementation is both more efficient and much easier to read** than
+the linked one. If it cannot be, use a linked list.
+
+<Figure caption="The two structures look nothing alike and the algorithms are identical. What the links were carrying in the linked version — the ordering — physical adjacency already provides in the array.">
+  <StackImplementationsFigure lang="en" />
+</Figure>
+
+Three things change in the array version: `top` becomes an index rather than a
+pointer, the maximum element count is kept alongside it, and the `next` field
+disappears.
+
+One detail from the allocation is worth keeping. `calloc(n, size)` and `malloc`
+both allocate a block and return its starting address; the difference is that
+`calloc` zeroes what it allocates and `malloc` does not. Read a freshly
+`malloc`ed cell before writing to it and you get garbage.
+
+## Four applications, and reversing
+
+Stack applications fall into four broad families. The reason underneath all four
+is the same: **something cannot be used now and will be needed later, in the
+opposite order.**
+
+<FactList items={[
+  { term: "Reversing", value: "Turning the order of the data around. Printing a list backwards, converting a decimal number to binary." },
+  { term: "Parsing", value: "Breaking data into independent pieces to be processed later. The first stage of a compiler." },
+  { term: "Postponement", value: "Delaying the use of a value to a later point. Infix to postfix, and evaluating postfix." },
+  { term: "Backtracking", value: "Storing the decision points and going back to the nearest one on hitting a dead end." },
+]} />
+
+### Decimal to binary
+
+To convert a number to binary you divide by two repeatedly and write down the
+remainders. The problem is that **the remainders are produced in the wrong
+order**. Printed as they appear, 19 comes out as 11001; the answer is 10011.
+
+<Figure caption="The whole idea in one sentence: do not print it when it is produced, push it; pop and print at the end. Printing a linked list backwards uses the same trick unchanged.">
+  <BinaryConversionFigure lang="en" />
+</Figure>
+
+One thing to watch in the program itself: in this kind of code **the stack
+structure is never referred to directly.** Every reference goes through the stack
+ADT's interface. That is what encapsulation and reusability come down to in
+practice.
+
+## Parsing
+
+Parsing means breaking data into independent pieces so they can be processed
+afterwards. A compiler has to break a source program into keywords, names and
+symbols — tokens — before it can translate any of it.
+
+The classic exercise is unmatched brackets in an algebraic expression. The
+algorithm is one sentence — push an opening bracket, pop on a closing one — but
+it ends in three distinct ways.
+
+<Figure caption="The height of the stack at any point is the number of brackets still open. Two of the three endings are errors, and they are different errors: one is a bracket too many, the other a bracket too few.">
+  <ParenMatchFigure lang="en" />
+</Figure>
+
+The same logic extends to braces and square brackets: *which kind* of bracket was
+pushed is stored as well, and on a closing bracket the two kinds are checked
+against each other.
+
+## Postponement
+
+The logic of an application often requires the use of a value to be postponed.
+Arithmetic expressions are the cleanest example, and they come in three
+notations:
+
+<FactList items={[
+  { term: "Prefix", value: "+ a b — the operator comes before its operands." },
+  { term: "Infix", value: "a + b — the operator sits between them. The form people write." },
+  { term: "Postfix", value: "a b + — the operator comes after its operands." },
+]} />
+
+The drawback of infix is that brackets are needed to control the order of
+evaluation, and on top of that there are two precedence classes. Postfix and
+prefix need no brackets at all and have a single evaluation rule. This is why a
+compiler converts source code to postfix before evaluating it — the conversion
+separates the operands from the operators.
+
+Precedence is not optional. `A*B+C` has two candidate postfix forms, `ABC*+` and
+`AB*C+`, and arithmetic precedence — multiplication before addition — is what
+makes the second one the right answer. Without a precedence rule the conversion
+is not single-valued.
+
+### Converting by hand
+
+1. Fully bracket the expression, using arithmetic precedence.
+2. Starting from the innermost expression, convert the inside of each bracket to
+   postfix, moving the operator in front of that bracket's closing one.
+3. Throw all the brackets away.
+
+```text
+A + B * C  →  ( A + ( B * C ) )  →  ( A ( B C * ) + )  →  A B C * +
+```
+
+Good for doing it by hand, too roundabout to make a computer do it. The
+algorithmic method uses a stack instead.
+
+### Converting with a stack
+
+- An operand is copied straight to the output expression.
+- An operator is pushed.
+- The next operand is copied to the output again.
+- If the next operator is of **higher** precedence than the one on top of the
+  stack it is pushed; if it is not, the one on the stack is popped to the output
+  and then the new one is pushed.
+- This repeats until the last operand has been copied out.
+- Whatever operators are left on the stack are popped to the output.
+
+There is one more subtlety. If an operator of lower or equal precedence has
+forced the top off the stack, **the new top is examined too** — and if that one
+is also of higher or equal precedence it comes off as well. So several operators
+can reach the output before the new one is pushed.
+
+<FactList items={[
+  { term: "Precedence 2", value: "* /" },
+  { term: "Precedence 1", value: "+ −" },
+  { term: "Precedence 0", value: "( — removes nothing from the stack; it is only discarded when a ) arrives." },
+]} />
+
+<ExpressionLab lang="en" />
+
+The second tab runs the same stack in the other direction. In postfix the
+operands come *before* the operators, so this time it is the **operands** whose
+use has to be postponed, not the operators: each operand is pushed, and when an
+operator arrives two operands are popped off the top, the operation is performed,
+and the result is pushed back.
+
+## Backtracking
+
+Backtracking is a way of finding a suitable path from a starting point to a
+given goal. It is common in decision analysis, in expert systems and in games.
+
+<Figure caption="The eye finds the path immediately; a computer needs an algorithm. Two rules are enough: remember where you are at every decision point, and on hitting a dead end go back to the nearest one — not to the beginning.">
+  <BacktrackFigure lang="en" />
+</Figure>
+
+"Go back to the nearest decision point" is a LIFO statement: **the decision point
+stored most recently is the first one to be returned to.** That is why the data
+structure is a stack.
+
+What gets pushed depends on what you want at the end. If finding the goal is all
+that matters, only the branching points are pushed. If the path to the goal has
+to be printed, **the nodes on the current path are pushed too** — and because
+there are now two different kinds of thing on the stack, each one needs a flag
+saying which it is: a path token or a backtracking token.
+
+## Stacks and subroutines
+
+A stack is not only a data structure you write. It is how the computer runs
+subroutine calls in the first place: every parameter is passed from the calling
+program to the subroutine, and back, on a stack.
+
+<Figure caption="A stack frame is the subarea allocated on the stack for one particular subroutine: created on entry, released when control is handed back. Local variables can be put inside it too, to save space and to make access easier.">
+  <StackFrameFigure lang="en" />
+</Figure>
+
+The general-purpose registers of the processor are used by the calling program
+and by the subroutine independently, so their contents have to be preserved
+across the call — that is what part ② of the frame is for.
+
+This is also where the cost of recursion lives. **Every recursive call is another
+stack frame**, and they are all in memory at once: `factorial(3)` produces three.
+When the recursion lecture said that recursion costs both time and memory, the
+memory half of it was this.
+
+## Check yourself
+
+<Exercises>
+
+<Exercise n="1" question="Why is pushStack the same code as inserting at the head of a linked list?">
+
+Because it *is* that operation. The top of a stack is the head of a list, and
+pushing means putting a new node in front of it: set the new node's link to the
+current top, then turn the top pointer to the new node.
+
+The ordering rule is the same too, and for the same reason. Turn `top` to the new
+node first and the address of the rest of the stack is recorded nowhere.
+
+</Exercise>
+
+<Exercise n="2" question="Converting 19 to binary produces the remainders 1 1 0 0 1. Why can't you print each one as it appears?">
+
+Because division produces the bits **from the least significant end** and they
+have to be printed from the most significant. Printed as they appear, 19 reads
+11001 — which is 25, not 19.
+
+The remainders are needed in exactly the opposite order to the one they arrive
+in, which is the definition of a reversing problem, which is a stack.
+
+</Exercise>
+
+<Exercise n="3" question="In the infix-to-postfix algorithm, what does giving the opening bracket a precedence of 0 buy you?">
+
+It means the bracket **never forces anything off the stack**, and nothing on the
+stack below it can be reached by an operator arriving above it.
+
+Every operator has a precedence of 1 or 2, so the loop that pops "everything of
+at least this precedence" always stops at a `(`. That single number is what makes
+a bracket into a floor. The `(` itself is not popped by precedence at all — it is
+discarded when the matching `)` arrives.
+
+</Exercise>
+
+<Exercise n="4" question="A*B+C has two candidate postfix forms, ABC*+ and AB*C+. Which is right, and what does the other one compute?">
+
+`AB*C+` is right. Read it: push A, push B, `*` → A*B, push C, `+` → (A*B)+C.
+
+`ABC*+` computes A+(B*C) — the same operators, applied to different pairs. Both
+are valid postfix expressions, which is the point: without a precedence rule the
+conversion is not single-valued, and the one that respects arithmetic precedence
+is the one that means what the infix expression meant.
+
+</Exercise>
+
+<Exercise n="5" question="Why is backtracking a stack rather than a queue?">
+
+Because of the word *nearest*. On hitting a dead end you go back to the nearest
+decision point, and the nearest one is the one recorded most recently — last in,
+first out.
+
+A queue would hand back the **first** decision point recorded, which means
+restarting from near the beginning and re-walking everything already known to be
+a dead end.
+
+</Exercise>
+
+<Exercise n="6" question="Why does recursion cost memory and not just time?">
+
+Because each call gets its own stack frame — parameters, saved registers, the
+return address, the return value — and a frame is only released when its call
+returns.
+
+In a recursion nothing returns until the base case is reached, so every frame
+from the first call down to the last is in memory simultaneously. The memory cost
+grows with the depth of the recursion, which is why a runaway recursion ends in a
+stack overflow rather than merely in a slow program.
+
+</Exercise>
+
+</Exercises>

@@ -1,0 +1,306 @@
+---
+title: Queues
+summary: 'The linear list open at both ends: FIFO. Four operations, the two special cases that break queue code, the circular-array trick, and what queuing theory does with all of it.'
+date: '2026-08-27'
+series: Data Structures
+seriesOrder: 5
+tags:
+  - queue
+  - c
+  - data structures
+---
+
+This post is a **study file** for the queue topic of BLM212 Data Structures. It
+was compiled and edited with AI from the course notes. The circular queue in the
+middle can be driven with its own enqueue and dequeue — the section's claim is
+that the modulus lets the freed cells be used again, and the single move where
+`rear` wraps from 5 back to 0 while `front` is still in the middle is exactly
+what a finished drawing cannot show.
+
+## What a queue is
+
+A queue is a restricted linear list too, but unlike a stack it uses **both ends
+at once**: data goes in at the rear and comes out at the front. First in, first
+out — FIFO. Values are processed in the order they were taken in.
+
+<Figure caption="A stack had one end to keep track of; a queue has two. That is the only structural difference, and every other difference follows from it.">
+  <QueueModelFigure lang="en" />
+</Figure>
+
+Every real-world queue is one of these: the supermarket till, the printer queue,
+the operating system's task queue. Wherever fairness is required, FIFO is what
+implements it.
+
+<FactList items={[
+  { term: "front", value: "The head of the queue — the exit. Deletion happens here." },
+  { term: "rear", value: "The end of the queue — the entrance. Insertion happens here." },
+  { term: "FIFO", value: "First In – First Out. The exact opposite of a stack's LIFO." },
+  { term: "Order is kept", value: "A stack reverses the order, a queue preserves it. Every difference in what they are used for comes from this." },
+]} />
+
+## The four operations
+
+Four basic operations: two change the queue, two only read it. Create and destroy
+are added to them.
+
+<FactList items={[
+  { term: "enqueue", value: "Adds an element at the rear of the queue. Overflow if there is no room." },
+  { term: "dequeue", value: "Removes an element from the front and returns it. Underflow if the queue is empty." },
+  { term: "queueFront", value: "Reads the element at the front without removing it." },
+  { term: "queueRear", value: "Reads the element at the rear without removing it." },
+  { term: "createQueue", value: "Sets up the head structure with front = null, rear = null and count = 0." },
+  { term: "destroyQueue", value: "Gives every node and the head structure back to the system." },
+]} />
+
+Both of the operations that change the queue have **one special case**, and
+between them those two cases are the whole difficulty of queue code. `enqueue`'s
+is the empty queue:
+
+```text
+Algorithm enqueue (queue, item)
+1 if (queue full) return false
+2 allocate (newPtr)
+3 newPtr->data = item
+4 newPtr->next = null
+5 if (queue->count is 0)              // adding to an empty queue
+   1  queue->front = newPtr
+6 else
+   1  queue->rear->next = newPtr
+7 queue->rear  = newPtr
+8 queue->count = queue->count + 1
+9 return true
+```
+
+If the queue is empty, `front` has to be turned to the new node as well —
+otherwise the head of the queue points at nothing. `dequeue`'s special case is
+the mirror image: the last element leaving.
+
+```text
+Algorithm dequeue (queue, item)
+1 if (queue->count is 0) return false
+2 item       = queue->front->data
+3 deleteLoc  = queue->front
+4 if (queue->count is 1)              // the last element is going
+   1  queue->rear = null
+5 queue->front = queue->front->next
+6 queue->count = queue->count - 1
+7 recycle (deleteLoc)
+8 return true
+```
+
+When the last element leaves, `rear` has to be nulled too, or what is left is a
+dangling pointer into a node that has been given back to the system.
+
+Everything else is routine linked-list work. `queueFront` and `dequeue` are
+identical apart from the deletion: check whether the queue is empty, return false
+if it is, otherwise hand the data back through `dataOut` and return true.
+
+## The linked implementation
+
+The head structure has one field more than a stack's: `front`, `rear` and
+`count`. The nodes are singly linked and the chain always runs from the front
+towards the rear.
+
+<Figure caption="Why keep rear at all? Without it every enqueue would have to walk to the end of the list, and the operation would be O(n) instead of O(1).">
+  <QueueLinkedFigure lang="en" />
+</Figure>
+
+There are no backward links, and none are needed: deletion happens at the front,
+which is where you already are.
+
+## Arrays, and why they have to go circular
+
+Implementing a queue with an array looks easy at first — `front` and `rear`
+become indices. But in a flat array **the queue creeps to the right**, and it
+reports itself full while the left-hand side stands empty.
+
+<Figure caption="Dequeue empties from the left and enqueue adds on the right, so the queue walks off the end of the array. The fix is to join the end of the array to its beginning.">
+  <ArrayCreepFigure lang="en" />
+</Figure>
+
+The fix is modular arithmetic:
+
+```c
+enqueue:  rear  = (rear  + 1) % maxSize
+dequeue:  front = (front + 1) % maxSize
+```
+
+At the last index the `%` wraps the value round to 0, which puts the freed cells
+on the left back into use.
+
+That leaves one classic trap. In a circular array `front == rear` can mean the
+queue is completely empty **or** completely full — the two states are
+indistinguishable from the indices alone. This is why a separate `count` field is
+kept: `count == 0` is empty, `count == maxSize` is full.
+
+<CircularQueueLab lang="en" />
+
+Worth trying: enqueue six times, dequeue three times, then enqueue again. You
+will see `rear` jump from 5 to 0 around the ring and start reusing the cells that
+were freed — the thing a flat array could not do. Pressing the controls at the
+limits is worth doing too; that is where the two checks the pseudocode opens with
+earn their place.
+
+## Queuing theory
+
+Queuing theory is the area of applied mathematics and computer science used to
+predict how queues will perform. It studies less the data structure than the
+real world that the data structure models.
+
+<FactList items={[
+  { term: "single-server queue", value: "Serves only one customer at a time — the kiosk on the corner." },
+  { term: "multi-server queue", value: "Serves more than one customer at a time — a bank, a post office." },
+  { term: "multiqueues", value: "Several single-server queues side by side — supermarket tills." },
+]} />
+
+The vocabulary is worth having exactly, because the predictions are made out of
+it:
+
+<FactList items={[
+  { term: "customer", value: "Any person or thing that needs a service — a print job is a customer too." },
+  { term: "service", value: "Whatever activity is needed to produce the result being asked for." },
+  { term: "arrival rate", value: "How often customers arrive at the queue. Can be random or regular." },
+  { term: "service time", value: "The average time needed to complete one customer's request." },
+  { term: "queue time", value: "The average time customers spend waiting in the queue." },
+  { term: "response time", value: "queue time + service time — from joining the queue to leaving the server." },
+]} />
+
+What queuing theory is for is predicting three of these patterns: the queue time,
+the average queue length and the maximum queue length. The predictions rest on
+two factors — the arrival rate and the average service time. Ideally customers
+arrive at a rate that matches the service time; in practice things rarely match,
+so sometimes the server sits idle and sometimes the queue piles up.
+
+Once a model of a queue exists, proposed changes to the system can be examined
+without being made. "If we automated the job and cut the average service time by
+15%, how many fewer people would we need?" and "how long can this arrangement
+hold before we have to add another server?" are queuing-theory questions.
+
+## Categorizing
+
+Categorizing means rearranging data **without disturbing its underlying order.**
+It is worth being careful here: this is not sorting. The result is not a sorted
+list but a list grouped by the rules you specified.
+
+<Figure caption="Why queues and not stacks? Because the original order inside each group has to survive. With stacks every group would come out reversed — this is the example where the difference between FIFO and LIFO is at its most visible.">
+  <CategorizeFigure lang="en" />
+</Figure>
+
+The solution is one sentence: create a queue for each of the four categories, put
+each number into the appropriate queue as it is read, and print the queues one
+after another at the end. It is a multiple-queue application.
+
+## Simulation
+
+Queue simulation is a modelling activity used to produce statistics about how a
+queue performs. The course example is a kiosk with a single window.
+
+<FactList items={[
+  { term: "The model", value: "One window, one member of staff, one customer at a time. Eight hours a day ⇒ a 480-minute model." },
+  { term: "Time unit", value: "Actions start and stop at one-minute intervals." },
+  { term: "Arrivals", value: "One customer every four minutes on average. A random number from 1 to 4: on a 4 a customer arrived, otherwise not." },
+  { term: "Service time", value: "Between 1 and 10 minutes, drawn at random as the customer is taken on." },
+  { term: "Every minute", value: "Is the server busy or idle? If idle, take the next customer; if busy, the waiting ones stay in the queue." },
+  { term: "Four structures", value: "The queue head · the queue node · the state of the current customer · the simulation statistics." },
+]} />
+
+The point of the simulation is to answer "what would happen if?" without changing
+the real kiosk. Its output is statistics like the average waiting time and the
+maximum queue length — the same numbers queuing theory tries to predict,
+produced by experiment instead.
+
+## Check yourself
+
+<Exercises>
+
+<Exercise n="1" question="What are the two special cases in queue code, and what breaks if you leave them out?">
+
+**Adding to an empty queue** and **removing the last element.**
+
+If `enqueue` does not check for the empty queue, only `rear` is updated and
+`front` stays null: the queue holds an element that cannot be reached from the
+front. If `dequeue` does not check for the last element, `rear` is left pointing
+at a node that has just been given back to the system — a dangling pointer, and
+the next `enqueue` writes through it.
+
+Everything else in the two functions is routine linked-list work, which is why
+mistakes concentrate in exactly these two places.
+
+</Exercise>
+
+<Exercise n="2" question="Why is rear kept in the head structure when front and the links would be enough to find it?">
+
+Because finding it would mean walking there. Without a `rear` pointer every
+`enqueue` would have to traverse the whole chain to reach the last node, making
+the operation **O(n) instead of O(1)** — and enqueue is one of the two operations
+a queue exists for.
+
+The extra field is a constant amount of memory buying a constant-time insertion.
+
+</Exercise>
+
+<Exercise n="3" question="In a circular array, why can front == rear mean two opposite things, and what settles it?">
+
+Because both ends move round the same ring. After enough enqueues `rear` catches
+up with `front` from behind; after enough dequeues `front` catches up with
+`rear`. The indices are identical in both cases, and nothing in them says which
+happened.
+
+A separate `count` field settles it: `count == 0` is empty, `count == maxSize` is
+full. (The other classic answer is to leave one cell permanently unused so the
+two states can never produce the same pair of indices.)
+
+</Exercise>
+
+<Exercise n="4" question="Categorizing 3 22 12 6 … into four groups: why is a queue the right structure and a stack the wrong one?">
+
+Because the requirement is to regroup the data **without disturbing the order
+inside a group**, and a queue is the structure that preserves order.
+
+Put the numbers into stacks and each group comes out reversed: Q1 would print 5 4
+9 6 3 instead of 3 6 9 4 5. The data would be grouped correctly and ordered
+wrongly. This is the clearest case in the course where the choice between FIFO
+and LIFO decides whether the answer is right.
+
+</Exercise>
+
+<Exercise n="5" question="Q1 holds 42 30 41 31 19 20 25 14 10 11 12 15 and Q2 holds 1 4 5 4 10 13, both front to rear. What is in Q3 after this code runs?">
+
+```text
+1 Q3 = createQueue
+2 count = 0
+3 loop (not empty Q1 and not empty Q2)
+   1  count = count + 1
+   2  dequeue (Q1, x)
+   3  dequeue (Q2, y)
+   4  if (y equal to count)
+      1  enqueue (Q3, x)
+```
+
+**Q3: 42 31**
+
+<QueueTraceTable lang="en" />
+
+The trick is in the loop condition rather than in the body: it only turns while
+*both* queues have something left. Q2 runs out after six turns, and the last six
+values of Q1 are never read at all.
+
+</Exercise>
+
+<Exercise n="6" question="Prefix expressions can be evaluated with a queue rather than a stack. How?">
+
+By scanning the expression repeatedly. On each pass you look for an operator
+followed immediately by two operands; where you find one, you compute its value
+and put that value in its place. The expression gets shorter with every pass
+until a single value is left.
+
+```text
+-+*9+28*+4863  →  -+*9 10 *12 6 3  →  -+90 72 3  →  -162 3  →  159
+```
+
+The stack version does it in one pass and this one does not, which is the price
+of not postponing anything: the scanning is what replaces the stack's memory.
+
+</Exercise>
+
+</Exercises>

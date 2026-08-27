@@ -18,13 +18,30 @@ import {
 import { LinkedListLab } from '@/components/linked-list/list-lab';
 import { FactList } from '@/components/primitives';
 import { ArrayVsListTable, SearchOutcomesTable } from '@/components/linked-list/tables';
+import { CircularQueueLab } from '@/components/queue/circular-queue-lab';
+import {
+  ArrayCreepFigure,
+  CategorizeFigure,
+  QueueLinkedFigure,
+  QueueModelFigure,
+} from '@/components/queue/figures';
+import { QueueTraceTable } from '@/components/queue/tables';
+import { ExpressionLab } from '@/components/stack/expression-lab';
+import {
+  BacktrackFigure,
+  BinaryConversionFigure,
+  ParenMatchFigure,
+  StackFrameFigure,
+  StackImplementationsFigure,
+  StackModelFigure,
+} from '@/components/stack/figures';
 import { Exercise, Exercises } from '@/components/study/exercise';
 import { Figure } from '@/components/study/figure';
 
 /**
  * Rendered on the server, so the full prose is present in the HTML source. The
- * only client-side pieces are the two figures a reader drives themselves —
- * every table and diagram below ships as static markup.
+ * only client-side pieces are the figures a reader drives themselves — every
+ * table and diagram below ships as static markup.
  */
 type MdxComponentMap = Record<string, ComponentType<Record<string, unknown>>>;
 
@@ -45,15 +62,21 @@ const components = {
     );
   },
   AdtModelFigure,
+  ArrayCreepFigure,
   ArrayVsListTable,
   AtomicCompositeFigure,
+  BacktrackFigure,
   BigOLadder,
+  BinaryConversionFigure,
   CallFlowFigure,
+  CategorizeFigure,
   CategoryTable,
   CircularListFigure,
+  CircularQueueLab,
   DoublyLinkedFigure,
   Exercise,
   Exercises,
+  ExpressionLab,
   FactList,
   Figure,
   GrowthCalculator,
@@ -63,9 +86,16 @@ const components = {
   HeadNodeFigure,
   LinkedListLab,
   ListAdtFigure,
+  ParenMatchFigure,
   PointerTrace,
+  QueueLinkedFigure,
+  QueueModelFigure,
+  QueueTraceTable,
   SearchFigure,
   SearchOutcomesTable,
+  StackFrameFigure,
+  StackImplementationsFigure,
+  StackModelFigure,
   VoidPointerFigure,
 };
 
